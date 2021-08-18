@@ -1,6 +1,8 @@
-pragma solidity >=0.5.0;
+pragma ton-solidity ^0.44.0;
 pragma AbiHeader time;
 pragma AbiHeader expire;
+
+import "IConstants.sol";
 
 // Subscriptions are storage of the Subscription Manager contract.
 // They hold the payment information.
@@ -8,16 +10,18 @@ pragma AbiHeader expire;
 // contract is built or when it calls the 'start' method.
 interface ISubscription is IConstants {
 
-    address static s_manager;
-    address static s_subscriber;
-    Payment m_latest;
+    // address static s_manager;
+    
+    // address static s_subscriber;
+    
+    // Payment m_latest;
+
 
     // Views
 
     function getManager() external view responsible returns(address);
     function getSubscriber() external view responsible returns(address);
     function getSubscriptionInfo() external view responsible returns(Payment);
-
 
     // Entry points
 
