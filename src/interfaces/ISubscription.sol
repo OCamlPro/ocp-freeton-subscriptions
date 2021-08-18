@@ -21,7 +21,7 @@ interface ISubscription is IConstants {
 
     function getManager() external view responsible returns(address);
     function getSubscriber() external view responsible returns(address);
-    function getSubscriptionInfo() external view responsible returns(Payment);
+    function getSubscriptionInfo() external responsible returns(Payment);
 
     // Entry points
 
