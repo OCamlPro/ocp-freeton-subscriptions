@@ -21,29 +21,29 @@ interface ISubscriptionManager is IConstants {
     
     // Views
     
-    function getOwner() external view returns(address);
+    function getProvider() external view returns(address);
     // Returns the owner of the manager
 
     function getWallet() external view returns(address);
     // Returns the address of the owner wallet
 
-    function getSubscriptions() external view returns(address);
-    // Return subscriptions (TODO: remove)
+    function getSubscription(address) external view returns(address);
+    // Return subscriptions
 
     // Entry points
 
     function subscribe() external; 
     // Starts a new subscription or extends one.
 
-    function pause() external; 
+    // function pause() external; 
     // Pauses the subscription of the subscriber
     // Can only be called by the subscriber
     
-    function resume() external;
+    // function resume() external;
     // Resumes a paused the subscription 
     // Can only be called by the subscriber
 
-    function cancel() external;
+    // function cancel() external;
     // Cancels the current subscription 
     // Can only be called by the subscriber
 }

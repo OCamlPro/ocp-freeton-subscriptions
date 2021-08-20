@@ -13,7 +13,7 @@ contract WalletBuilder is Builder {
         code = o;
     }
 
-    function deploy(address subscriber) external responsible initialized returns(address) {
+    function deploy(address subscriber) external responsible initialized returns(address, address) {
         Wallet ctr = new Wallet {
             value:(msg.value / 2),
             code: code.get(),
@@ -22,7 +22,7 @@ contract WalletBuilder is Builder {
                 s_subscriber: subscriber
             }
         }();
-        return {value:0, flag:0} (address(ctr));
+        return {value:0, flag:0} (subscriber, address(ctr));
     }
 
 }
