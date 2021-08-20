@@ -23,8 +23,11 @@ contract Subscription is ISubscription, Constants, Buildable {
 
     optional(uint128) m_expected_start; // Used by ownerClaim: if claim succeeds, will replace m_start
 
-    constructor() public{
-        require(false);
+    constructor(PaymentPlan p, address wallet) public{
+        c_payment_plan = p;
+        c_wallet = wallet;
+        m_wallet_balance = 0;
+        m_start = now;
     }
 
     // Views
