@@ -14,10 +14,12 @@ contract SubscriptionBuilder is Builder {
     }
 
     function deploy(
+        address wallet,
         address manager, 
         address service_provider, 
-        address subscriber
-    ) external responsible initialized returns(address) {
+        address subscriber,
+        PaymentPlan pplan
+    ) external responsible initialized returns(address, address) {
         Subscription ctr = new Subscription {
             value:(msg.value / 2),
             code: code.get(),
@@ -26,8 +28,8 @@ contract SubscriptionBuilder is Builder {
                 s_service_provider: service_provider,
                 s_subscriber: subscriber
             }
-        }();
-        return {value:0, flag:0} address(ctr);
+        }(pplan, wallet);
+        return {value:0, flag:0} (subscriber, address(ctr));
     }
 
 }

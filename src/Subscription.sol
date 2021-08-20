@@ -25,7 +25,7 @@ contract Subscription is ISubscription, Constants, Buildable {
 
     constructor(PaymentPlan p, address wallet) public{
         c_payment_plan = p;
-        c_wallet = wallet;
+        c_wallet = IWallet(wallet);
         m_wallet_balance = 0;
         m_start = now;
     }
