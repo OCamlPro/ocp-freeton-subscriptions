@@ -8,6 +8,8 @@ contract Constants is IConstants {
 
     uint8 constant E_UNAUTHORIZED = 100;
     uint8 constant E_INVALID_SUBSCRIPTION = 101;
+    uint8 constant E_ALREADY_INITIALIZED = 102;
+    uint8 constant E_UNINITIALIZED = 103;
 
     uint8 constant E_INVARIANT_BROKEN = 201;
 

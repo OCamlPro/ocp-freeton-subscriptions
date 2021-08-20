@@ -4,12 +4,13 @@ pragma AbiHeader expire;
 
 import "IConstants.sol";
 import "IWallet.sol";
+import "IBuildable.sol";
 
 // Subscriptions are storage of the Subscription Manager contract.
 // They hold the payment information.
 // A subscription is specific to a user. A subscription starts when the
 // contract is built or when it calls the 'start' method.
-interface ISubscription is IConstants {
+interface ISubscription is IConstants, IBuildable {
 
     // address static s_manager;
     

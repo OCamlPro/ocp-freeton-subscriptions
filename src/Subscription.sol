@@ -5,8 +5,9 @@ pragma AbiHeader expire;
 import "interfaces/ISubscription.sol";
 import "interfaces/IWallet.sol";
 import "Constants.sol";
+import "Buildable.sol";
 
-contract Subscription is ISubscription, Constants {
+contract Subscription is ISubscription, Constants, Buildable {
 
     address static s_manager; // The subscription manager
     address static s_service_provider; // The service provider
