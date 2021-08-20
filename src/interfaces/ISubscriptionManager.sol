@@ -12,6 +12,12 @@ interface ISubscriptionManager is IConstants {
 
     // address static s_owner; 
     // Owner of the manager
+
+    // address static s_wallet;
+    // The wallet of the manager
+
+    // address[] m_subscriptions;
+    // Subscriptions (TODO: remove)
     
     // Views
     
@@ -19,23 +25,18 @@ interface ISubscriptionManager is IConstants {
     // Returns the owner of the manager
 
     function getWallet() external view returns(address);
-    // Returns the address of the wallet ; 0 if there is no address
+    // Returns the address of the owner wallet
 
-    function isTIP3Compatible(address) external view returns(bool);
-    // Returns [true] if the subscription can be done with the TIP3
-    // whose root wallet is the argument; [false] otherwise.
-
-    function getSubscription(address) external view returns(Payment);
-    // Returns the subscription details of the subscriber address 
-    // in argument
+    function getSubscriptions() external view returns(address);
+    // Return subscriptions (TODO: remove)
 
     // Entry points
 
-    function subscribe(Payment, bool) external; 
+    function subscribe() external; 
     // Starts a new subscription or extends one.
 
     function pause() external; 
-    // Pauses the subscription 
+    // Pauses the subscription of the subscriber
     // Can only be called by the subscriber
     
     function resume() external;

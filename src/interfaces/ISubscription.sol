@@ -3,6 +3,7 @@ pragma AbiHeader time;
 pragma AbiHeader expire;
 
 import "IConstants.sol";
+import "IWallet.sol";
 
 // Subscriptions are storage of the Subscription Manager contract.
 // They hold the payment information.
@@ -14,30 +15,36 @@ interface ISubscription is IConstants {
     
     // address static s_subscriber;
     
-    // Payment m_latest;
+    // IWallet static s_wallet;
 
+    // Payment m_subscription;
+
+    // uint128 m_until;
+
+    // bool m_paused;
 
     // Views
 
     function getManager() external view responsible returns(address);
     function getSubscriber() external view responsible returns(address);
-    function getSubscriptionInfo() external responsible returns(Payment);
+    function getWallet() external view responsible returns(address);
+    function getStart() external view responsible returns(uint128);
+    function subscribedUntil() external view responsible returns(uint128);
 
     // Entry points
 
-    function start(Payment) external; 
-    // Starts a new subscription or extends the current one.
-    // Can only be called by the manager
+    function refillAccount(uint128) external; 
+    // Fills the subscription wallet and starts the subscription if 
+    // there is enough funds.
 
-    function pause() external; 
-    // Pauses the subscription 
-    // Can only be called by the manager & the subscriber
-    
-    function resume() external;
-    // Resumes the subscription 
-    // Can only be called by the manager & the subscriber
+    function cancelSubscription() external;
+    // Cancels the current subscription.
 
-    function cancel() external;
-    // Cancels the current subscription 
-    // Can only be called by the manager & the subscriber
+    //function subscriberClaim(uint128) external;
+    // Claims the amount in argument from the wallet.
+
+    function providerClaim() external;
+    // Claims all the funds available for the subscription
+    // and update the 'start date' of the subscription
+
 }

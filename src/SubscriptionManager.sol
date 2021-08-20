@@ -10,6 +10,12 @@ contract SubscriptionManager is ISubscriptionManager, Constants {
     address static s_owner; // Owner of the manager
     // Owner of the manager
     
+    address static s_wallet;
+    // The wallet of the manager
+
+    address[] m_subscriptions;
+    // Subscriptions (TODO: remove)
+    
     constructor() public{
         require(false);
     }
@@ -22,21 +28,16 @@ contract SubscriptionManager is ISubscriptionManager, Constants {
     // Returns the owner of the manager
 
 
-    // Returns the address of the wallet ; 0 if there is no address
+    // Returns the address of the wallet
     function getWallet() override external view returns(address){
-        require(false);
+        return s_wallet;
     }
 
-    // Returns [true] if the subscription can be done with the TIP3
-    // whose root wallet is the argument; [false] otherwise.
-    function isTIP3Compatible(address) override external view returns(bool){
-        require(false);
-    }
 
     // Returns the subscription details of the subscriber address 
     // in argument
-    function getSubscription(address) override external view returns(Payment){
-        require(false);
+    function getSubscriptions(address) override external view returns(address[]){
+        return m_subscriptions;
     }
 
     // Entry points
