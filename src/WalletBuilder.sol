@@ -7,8 +7,9 @@ import "Wallet.sol";
 
 contract WalletBuilder is Builder {
 
-    constructor(address a) public {
-        ref = IBuildable(a);
+    constructor(address buildable) public {
+        tvm.accept();
+        ref = IBuildable(buildable);
         optional(TvmCell) o;
         code = o;
     }

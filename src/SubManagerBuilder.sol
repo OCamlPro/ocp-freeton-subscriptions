@@ -12,8 +12,9 @@ contract SubManagerBuilder is Builder {
     address static s_sub_builder;
     address static s_wal_builder;
 
-    constructor(address a) public {
-        ref = IBuildable(a);
+    constructor(address buildable) public {
+        tvm.accept();
+        ref = IBuildable(buildable);
         optional(TvmCell) o;
         code = o;
         m_id = 0;

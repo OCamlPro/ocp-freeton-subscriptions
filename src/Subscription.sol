@@ -24,6 +24,7 @@ contract Subscription is ISubscription, Constants, Buildable {
     optional(uint128) m_expected_start; // Used by ownerClaim: if claim succeeds, will replace m_start
 
     constructor(PaymentPlan p, address wallet) public{
+        tvm.accept();
         c_payment_plan = p;
         c_wallet = IWallet(wallet);
         m_wallet_balance = 0;

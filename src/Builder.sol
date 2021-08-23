@@ -12,13 +12,14 @@ abstract contract Builder is Constants {
     optional(TvmCell) code;
     
     function init() external view{
-        require(tvm.pubkey() == msg.pubkey(), E_UNAUTHORIZED);
         require(!code.hasValue(), E_ALREADY_INITIALIZED);
+        tvm.accept();
         ref.thisIsMyCode{value:0, flag:128, callback:this.updateCode}();
     }
 
     function updateCode(TvmCell c) external onlyFrom(address(ref)){
         require(!code.hasValue(), E_ALREADY_INITIALIZED);
+        tvm.accept();
         code.set(c);
     }
 

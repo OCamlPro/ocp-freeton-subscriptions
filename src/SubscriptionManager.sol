@@ -31,7 +31,8 @@ contract SubscriptionManager is ISubscriptionManager, Constants {
     mapping(address => Subscription) m_subscriptions;
     // Subscriptions (TODO: remove)
     
-    constructor(address sub_builder_address, address wal_builder_address) public{
+    constructor(address sub_builder_address, address wal_builder_address) public {
+        tvm.accept();
         c_sub_builder = SubscriptionBuilder(sub_builder_address);
         c_wal_builder = WalletBuilder(wal_builder_address);
     }
@@ -85,6 +86,8 @@ contract SubscriptionManager is ISubscriptionManager, Constants {
         require(msg.sender == address(c_sub_builder), E_UNAUTHORIZED);
         m_subscriptions.add(subscriber, Subscription(subscription));
     }
+
+    // TODO: service provider payment
 
     //// Pauses the subscription 
     //// Can only be called by the subscriber
