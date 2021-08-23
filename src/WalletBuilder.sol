@@ -15,14 +15,14 @@ contract WalletBuilder is Builder {
 
     function deploy(address subscriber) external responsible initialized returns(address, address) {
         Wallet ctr = new Wallet {
-            value:(msg.value / 2),
+            value:(msg.value / 3),
             code: code.get(),
             varInit:{
                 s_manager: msg.sender,
                 s_subscriber: subscriber
             }
         }();
-        return {value:0, flag:0} (subscriber, address(ctr));
+        return {value:(msg.value / 3)} (subscriber, address(ctr));
     }
 
 }

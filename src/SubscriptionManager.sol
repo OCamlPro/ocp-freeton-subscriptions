@@ -9,6 +9,9 @@ import "WalletBuilder.sol";
 
 contract SubscriptionManager is ISubscriptionManager, Constants {
 
+    uint64 static s_id;
+    // Unique ID for the subscription manager
+
     address static s_service_provider;
     // Service provider
     
