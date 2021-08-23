@@ -4,8 +4,9 @@ pragma AbiHeader expire;
 
 import "interfaces/IWallet.sol";
 import "Constants.sol";
+import "Buildable.sol";
 
-contract Wallet is Constants {
+contract Wallet is Constants, Buildable {
 
     address static s_subscriber;
     address static s_manager;
