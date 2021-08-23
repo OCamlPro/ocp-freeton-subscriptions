@@ -30,12 +30,12 @@ contract RecurringPaymentsRoot is Constants {
         c_sm_builder.init{value:msg.value/4}();
     }
 
-    function deployService(address wallet) external view {
+    function deployService(address wallet, PaymentPlan pplan) external view {
         c_sm_builder.deploy{
             value:0, 
             flag:128, 
             callback:this.onDeployService
-        }(wallet);
+        }(wallet, pplan);
     }
 
     function onDeployService(address service) external view {

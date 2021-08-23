@@ -7,7 +7,7 @@ import "Constants.sol";
 import "SubscriptionBuilder.sol";
 import "WalletBuilder.sol";
 
-contract SubscriptionManager is ISubscriptionManager, Constants {
+contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
 
     uint64 static s_id;
     // Unique ID for the subscription manager
@@ -25,16 +25,17 @@ contract SubscriptionManager is ISubscriptionManager, Constants {
     // Wallet builder
 
     PaymentPlan c_payment_plan;
-    // THe payment plan
+    // The payment plan
     // TODO: multiple payment plans
 
     mapping(address => Subscription) m_subscriptions;
     // Subscriptions (TODO: remove)
     
-    constructor(address sub_builder_address, address wal_builder_address) public {
+    constructor(address sub_builder_address, address wal_builder_address, PaymentPlan pplan) public {
         tvm.accept();
         c_sub_builder = SubscriptionBuilder(sub_builder_address);
         c_wal_builder = WalletBuilder(wal_builder_address);
+        c_payment_plan = pplan;
     }
 
 
@@ -62,7 +63,7 @@ contract SubscriptionManager is ISubscriptionManager, Constants {
     // Starts a new subscription.
     function subscribe() override external{
         c_wal_builder.deploy{
-            value:0, 
+            value:msg.value, 
             flag:0, 
             callback: this.onWalletDeploy
         } (msg.sender);
@@ -71,7 +72,7 @@ contract SubscriptionManager is ISubscriptionManager, Constants {
     function onWalletDeploy(address subscriber, address wallet) external view {
         require(msg.sender == address(c_wal_builder), E_UNAUTHORIZED);
         c_sub_builder.deploy{
-            value:0,
+            value:msg.value,
             flag:0,
             callback:this.onSubscribtionDeploy
         }(
