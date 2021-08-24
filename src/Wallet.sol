@@ -23,7 +23,7 @@ contract Wallet is Constants, Buildable {
         require (msg.sender == s_manager, E_UNAUTHORIZED);
         require (!c_subscription.hasValue(), E_ALREADY_INITIALIZED);
         c_subscription.set(subscription);
-        ISubscription(subscription).setBalance{value:msg.value, flag:0}(address(this).balance);
+        s_subscriber.transfer(0, false, 128);
     }
 
     event Ok1();
@@ -33,13 +33,14 @@ contract Wallet is Constants, Buildable {
 
     // Only callable by s_subscription, transfers `amount` to `receiver`
     // If amount is negative, returns balance - | amount |
+    // WARNING: bug if amount is lower than internal fees
     function transferTo(address receiver, int128 amount) view external {
         require (c_subscription.hasValue(), E_UNINITIALIZED);
         require (msg.sender == c_subscription.get(), E_UNAUTHORIZED);
         emit Ok1();
         int128 to_transfer;
         if (amount < 0) {
-            to_transfer = int128(address(this).balance) - amount;
+            to_transfer = int128(address(this).balance) + amount;
         } else {
             to_transfer = amount;
         }
@@ -54,6 +55,7 @@ contract Wallet is Constants, Buildable {
        
         require (c_subscription.hasValue(), E_UNINITIALIZED);
         require (msg.sender == c_subscription.get(), E_UNAUTHORIZED);
+
         int128 to_transfer;
         if (amount < 0) {
             to_transfer = int128(address(this).balance) - amount;

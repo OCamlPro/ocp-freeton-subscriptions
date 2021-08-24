@@ -62,11 +62,6 @@ contract Subscription is ISubscription, Constants, Buildable {
         return m_start;
     }
 
-    function setBalance(uint128 balance) override external onlyFrom(address(c_wallet)){
-        m_wallet_balance = balance;
-        s_subscriber.transfer(0,false,128);
-    }
-
     function numberOfTicksLocked() internal view returns(uint128){
         uint128 number_of_ticks_until_now;
         uint128 number_of_ticks_payable;
@@ -109,8 +104,6 @@ contract Subscription is ISubscription, Constants, Buildable {
     // Entry points
 
     function refillAccount(uint128 expected_gas) override external {
-        require (expected_gas < msg.value);
-        
         c_wallet.transfer{
             value:msg.value - expected_gas,
             flag:0,
@@ -155,8 +148,9 @@ contract Subscription is ISubscription, Constants, Buildable {
     }
 
     function cancelSubscription() override external onlyFrom(s_subscriber){
+        tvm.accept();
         int128 locked = -1 * int128(lockedFunds());
-        c_wallet.transferTo{value:msg.value, flag:0}(s_subscriber, locked);
+        c_wallet.transferTo{value:msg.value, flag:128}(s_subscriber, locked);
     }
 
     function providerClaim() override public {

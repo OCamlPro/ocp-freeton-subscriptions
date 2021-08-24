@@ -30,7 +30,7 @@ contract SubscriptionBuilder is Builder {
                 s_subscriber: subscriber
             }
         }(pplan, wallet);
-        return {value:msg.value / 3, flag:0} (subscriber, address(ctr), wallet);
+        return {value:0, flag:128} (subscriber, address(ctr), wallet);
     }
 
 }
