@@ -37,18 +37,12 @@ contract Wallet is Constants, Buildable {
     function transferTo(address receiver, int128 amount) view external {
         require (c_subscription.hasValue(), E_UNINITIALIZED);
         require (msg.sender == c_subscription.get(), E_UNAUTHORIZED);
-        emit Ok1();
-        int128 to_transfer;
         if (amount < 0) {
-            to_transfer = int128(address(this).balance) + amount;
+            tvm.rawReserve(uint128(-1 * amount), 0);
+            receiver.transfer(0,false,128);
         } else {
-            to_transfer = amount;
+            receiver.transfer(uint128(amount),false);
         }
-        emit Ok2();
-        require (to_transfer >= 0, E_INVALID_AMOUNT);
-        emit Ok3();
-        receiver.transfer(uint128(to_transfer), false);
-        emit Ok4();
     }
 
     function transferToCallback(address receiver, int128 amount) view external responsible returns(uint128){
