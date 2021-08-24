@@ -6,6 +6,9 @@ interface IWallet {
 
     // address static s_subscribtion;
 
+    function init(address) external;
+    // Initializes a wallet with the address of the subscription.
+
     function transferTo(address, int128) external;
     // Only callable by s_subscription, transfers `amount` to `receiver`
 

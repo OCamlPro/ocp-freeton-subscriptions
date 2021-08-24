@@ -20,7 +20,7 @@ contract SubscriptionBuilder is Builder {
         address service_provider, 
         address subscriber,
         PaymentPlan pplan
-    ) external responsible initialized returns(address, address) {
+    ) external responsible initialized returns(address, address, address) {
         Subscription ctr = new Subscription {
             value:(msg.value / 3),
             code: code.get(),
@@ -30,7 +30,7 @@ contract SubscriptionBuilder is Builder {
                 s_subscriber: subscriber
             }
         }(pplan, wallet);
-        return {value:msg.value / 3, flag:0} (subscriber, address(ctr));
+        return {value:msg.value / 3, flag:0} (subscriber, address(ctr), wallet);
     }
 
 }

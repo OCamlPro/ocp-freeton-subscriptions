@@ -9,15 +9,17 @@ contract SubManagerBuilder is Builder {
 
     uint64 m_id;
 
-    address static s_sub_builder;
-    address static s_wal_builder;
+    address c_sub_builder;
+    address c_wal_builder;
 
-    constructor(address buildable) public {
+    constructor(address buildable, address sub_builder, address wal_builder) public {
         tvm.accept();
         ref = IBuildable(buildable);
         optional(TvmCell) o;
         code = o;
         m_id = 0;
+        c_sub_builder = sub_builder;
+        c_wal_builder = wal_builder;
     }
 
     function deploy(address wallet, PaymentPlan pplan) external responsible initialized returns(address) {
@@ -29,7 +31,7 @@ contract SubManagerBuilder is Builder {
                 s_service_provider: msg.sender,
                 s_wallet: wallet 
             }
-        }(s_sub_builder, s_wal_builder, pplan);
+        }(c_sub_builder, c_wal_builder, pplan);
         m_id ++;
         return {value:(msg.value / 3)} (address(ctr));
     }

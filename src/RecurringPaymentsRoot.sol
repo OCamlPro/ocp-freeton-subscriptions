@@ -23,11 +23,15 @@ contract RecurringPaymentsRoot is Constants {
         c_sm_builder  = SubManagerBuilder(sm_builder);
     }
 
+
     function init() public view {
         tvm.accept();
-        c_wal_builder.init{value:msg.value/4}();
-        c_sub_builder.init{value:msg.value/4}();
-        c_sm_builder.init{value:msg.value/4}();
+        c_sub_builder.init{value:msg.value/5, flag:0}(); 
+        // For some reason, it fails the first time, but not the second
+        
+        c_wal_builder.init{value:msg.value/5, flag:0}();
+        c_sm_builder.init{value:msg.value/5, flag:0}();
+        c_sub_builder.init{value:msg.value/5, flag:0}();
     }
 
     function deployService(address wallet, PaymentPlan pplan) external view {

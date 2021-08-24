@@ -3,6 +3,7 @@ pragma AbiHeader time;
 pragma AbiHeader expire;
 
 import "interfaces/ISubscriptionManager.sol";
+import "interfaces/IWallet.sol";
 import "Constants.sol";
 import "SubscriptionBuilder.sol";
 import "WalletBuilder.sol";
@@ -27,6 +28,8 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
     PaymentPlan c_payment_plan;
     // The payment plan
     // TODO: multiple payment plans
+
+    event SubscriptionComplete(address subscriber, address subscription, address wallet);
 
     mapping(address => Subscription) m_subscriptions;
     // Subscriptions (TODO: remove)
@@ -74,7 +77,7 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
         c_sub_builder.deploy{
             value:msg.value,
             flag:0,
-            callback:this.onSubscribtionDeploy
+            callback:this.onSubscriptionDeploy
         }(
         wallet,
         address(this), 
@@ -83,9 +86,11 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
         c_payment_plan);
     }
 
-    function onSubscribtionDeploy(address subscriber, address subscription) external {
+    function onSubscriptionDeploy(address subscriber, address subscription, address wallet) external {
         require(msg.sender == address(c_sub_builder), E_UNAUTHORIZED);
         m_subscriptions.add(subscriber, Subscription(subscription));
+        emit SubscriptionComplete(subscriber, subscription, wallet);
+        IWallet(wallet).init{value:msg.value, flag:128}(subscription);
     }
 
     // TODO: service provider payment
