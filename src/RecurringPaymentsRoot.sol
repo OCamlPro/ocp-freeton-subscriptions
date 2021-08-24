@@ -10,6 +10,8 @@ import "WalletBuilder.sol";
 
 contract RecurringPaymentsRoot is Constants {
     
+    address static s_owner;
+
     WalletBuilder c_wal_builder; // The wallet builder
     SubscriptionBuilder c_sub_builder; // The subscription builder
     SubManagerBuilder c_sm_builder; // The subscription manager builder
@@ -21,17 +23,10 @@ contract RecurringPaymentsRoot is Constants {
         c_wal_builder = WalletBuilder(wal_builder);
         c_sub_builder = SubscriptionBuilder(sub_builder);
         c_sm_builder  = SubManagerBuilder(sm_builder);
-    }
-
-
-    function init() public view {
-        tvm.accept();
-        c_sub_builder.init{value:msg.value/5, flag:0}(); 
-        // For some reason, it fails the first time, but not the second
-        
-        c_wal_builder.init{value:msg.value/5, flag:0}();
-        c_sm_builder.init{value:msg.value/5, flag:0}();
-        c_sub_builder.init{value:msg.value/5, flag:0}();
+        c_wal_builder.init{value:0.1 ton, flag:0}();
+        c_sm_builder.init{value:0.1 ton, flag:0}();
+        c_sub_builder.init{value:0.1 ton, flag:0}();
+        s_owner.transfer(0, false, 128);
     }
 
     function deployService(address wallet, PaymentPlan pplan) external view {
