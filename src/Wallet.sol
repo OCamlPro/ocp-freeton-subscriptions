@@ -3,6 +3,7 @@ pragma AbiHeader time;
 pragma AbiHeader expire;
 
 import "interfaces/IWallet.sol";
+import "interfaces/ISubscription.sol";
 import "Constants.sol";
 import "Buildable.sol";
 
@@ -22,6 +23,7 @@ contract Wallet is Constants, Buildable {
         require (msg.sender == s_manager, E_UNAUTHORIZED);
         require (!c_subscription.hasValue(), E_ALREADY_INITIALIZED);
         c_subscription.set(subscription);
+        ISubscription(subscription).setBalance{value:msg.value, flag:0}(address(this).balance);
     }
 
     event Ok1();

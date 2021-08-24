@@ -34,6 +34,9 @@ interface ISubscription is IConstants, IBuildable {
 
     // Entry points
 
+    function setBalance(uint128) external;
+    // Only callable by wallet
+
     function refillAccount(uint128) external; 
     // Fills the subscription wallet and starts the subscription if 
     // there is enough funds.

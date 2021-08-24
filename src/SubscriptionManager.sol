@@ -64,12 +64,12 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
     // Entry points
 
     // Starts a new subscription.
-    function subscribe() override external{
+    function subscribe(address subscriber) override external{
         c_wal_builder.deploy{
             value:msg.value, 
             flag:0, 
             callback: this.onWalletDeploy
-        } (msg.sender);
+        } (subscriber);
     }
 
     function onWalletDeploy(address subscriber, address wallet) external view {
@@ -90,7 +90,7 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
         require(msg.sender == address(c_sub_builder), E_UNAUTHORIZED);
         m_subscriptions.add(subscriber, Subscription(subscription));
         emit SubscriptionComplete(subscriber, subscription, wallet);
-        IWallet(wallet).init{value:msg.value, flag:128}(subscription);
+        IWallet(wallet).init{value:0, flag:128}(subscription);
     }
 
     // TODO: service provider payment

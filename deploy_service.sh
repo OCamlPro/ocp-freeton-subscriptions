@@ -6,7 +6,7 @@ service=${service_list[-1]}
 echo "Service address = $service"
 
 ft account create SubManagerInstance --contract SubscriptionManager --address $service -f &&
-ft multisig transfer 10 --from user1 --to SubManagerInstance subscribe &&
+ft multisig transfer 10 --from user1 --to SubManagerInstance subscribe '{"subscriber":"%{account:address:user1}"}' &&
 
 subscription_list=($(ft inspect --past SubManagerInstance 2>&1 | grep 'Event SubscriptionComplete' | sed 's/.*\"subscription\":\"//g' | sed 's/\".*//g'))
 subscription=${subscription_list[-1]}

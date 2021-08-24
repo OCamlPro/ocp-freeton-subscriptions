@@ -62,6 +62,11 @@ contract Subscription is ISubscription, Constants, Buildable {
         return m_start;
     }
 
+    function setBalance(uint128 balance) override external onlyFrom(address(c_wallet)){
+        m_wallet_balance = balance;
+        s_subscriber.transfer(0,false,128);
+    }
+
     function numberOfTicksLocked() internal view returns(uint128){
         uint128 number_of_ticks_until_now;
         uint128 number_of_ticks_payable;
