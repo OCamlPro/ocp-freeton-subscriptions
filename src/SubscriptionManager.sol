@@ -95,6 +95,14 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
         IWallet(wallet).init{value:0, flag:128}(subscription);
     }
 
+    function claimSubscriptions() external override {
+        tvm.accept();
+        for(( ,Subscription s) : m_subscriptions) {
+            s.providerClaim{value:0.035 ton}();
+        }
+        s_service_provider.transfer(0,false,128);
+    }
+
     // TODO: service provider payment
 
     //// Pauses the subscription 

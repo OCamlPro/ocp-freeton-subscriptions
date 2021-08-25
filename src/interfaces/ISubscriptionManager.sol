@@ -33,6 +33,8 @@ interface ISubscriptionManager is IConstants {
     // Entry points
 
     function subscribe(address) external; 
+
+    function claimSubscriptions() external;
     // Starts a new subscription.
 
     // function pause() external; 

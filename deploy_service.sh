@@ -37,5 +37,4 @@ ft multisig transfer 5 --from user2 --to SubscriptionInstance2 refillAccount '{"
 
 ft multisig transfer 1 --from user2 --to SubscriptionInstance2 cancelSubscription &&
 ft multisig transfer 1 --from user1 --to SubscriptionInstance cancelSubscription &&
-ft multisig transfer 1 --from user1 --to SubscriptionInstance providerClaim &&
-ft multisig transfer 1 --from user1 --to SubscriptionInstance2 providerClaim
+ft multisig transfer 1 --from user1 --to SubManagerInstance claimSubscriptions
