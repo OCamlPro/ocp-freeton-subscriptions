@@ -130,9 +130,10 @@ contract Subscription is ISubscription, Constants, Buildable {
     // will be used as the gas for the rest of the execution and refund 
     // to the user.
     function refillAccount(uint128 expected_gas) override external {
-        tvm.accept();
         require (expected_gas >= 0.01 ton, E_INVALID_AMOUNT);
         // 0.01 is enough for the rest of the execution
+        require (p.root_token == address(0), E_NOT_CALLABLE_IF_TIP3);
+        tvm.accept();
 
         c_wallet.transfer{
             value:msg.value - expected_gas,
