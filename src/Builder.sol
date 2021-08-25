@@ -22,8 +22,4 @@ abstract contract Builder is Constants {
         code.set(c);
     }
 
-    modifier initialized() {
-        require(code.hasValue(), E_UNINITIALIZED);
-        _;
-    }
 }

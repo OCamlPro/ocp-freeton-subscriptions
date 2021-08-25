@@ -22,7 +22,9 @@ contract SubManagerBuilder is Builder {
         c_wal_builder = wal_builder;
     }
 
-    function deploy(address wallet, PaymentPlan pplan) external responsible initialized returns(address) {
+    function deploy(address wallet, PaymentPlan pplan) external responsible returns(address) {
+        require (code.hasValue(), E_UNINITIALIZED);
+
         SubscriptionManager ctr = new SubscriptionManager {
             value:(msg.value / 2),
             code: code.get(),

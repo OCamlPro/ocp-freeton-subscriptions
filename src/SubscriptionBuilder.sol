@@ -20,7 +20,9 @@ contract SubscriptionBuilder is Builder {
         address service_provider, 
         address subscriber,
         PaymentPlan pplan
-    ) external responsible initialized returns(address, address, address) {
+    ) external responsible returns(address, address, address) {
+        require (code.hasValue(), E_UNINITIALIZED);
+
         Subscription ctr = new Subscription {
             value:(msg.value / 2),
             code: code.get(),

@@ -62,7 +62,7 @@ contract Subscription is ISubscription, Constants, Buildable {
         return m_start;
     }
 
-    function numberOfTicksLocked() internal view returns(uint128){
+    function _numberOfTicksLocked() internal view returns(uint128){
         uint128 number_of_ticks_until_now;
         uint128 number_of_ticks_payable;
         uint128 number_of_ticks_locked;
@@ -87,13 +87,13 @@ contract Subscription is ISubscription, Constants, Buildable {
     }
 
     function lockedFunds() public view responsible returns(uint128){
-        uint128 res = numberOfTicksLocked() * c_payment_plan.amount;
+        uint128 res = _numberOfTicksLocked() * c_payment_plan.amount;
         return res;
     
     }
 
     function subscribedUntil() override public view responsible returns(uint128) {
-        uint128 res = m_start + numberOfTicksLocked() * c_payment_plan.period;
+        uint128 res = m_start + _numberOfTicksLocked() * c_payment_plan.period;
         emit Start(m_start);
         emit SubscribedUntil(res);
         return res;
@@ -129,18 +129,13 @@ contract Subscription is ISubscription, Constants, Buildable {
 
     }
 
-    event NowIsAfter();
-    event StartNow();
-
     function onOnRefillAccount(uint128 wallet_balance) public onlyFrom(address(c_wallet)){
         m_wallet_balance = wallet_balance;
         if (now > subscribedUntil()) {
             // Subscription stopped at some point.
             // If there is now enough funds to start a new subscription,
             // we have to update m_start
-            emit NowIsAfter();
             if (wallet_balance >= c_payment_plan.amount){
-                emit StartNow();
                 m_start = now;
             }
         }
@@ -156,7 +151,7 @@ contract Subscription is ISubscription, Constants, Buildable {
     function providerClaim() override external {
         
         tvm.accept();
-        uint128 locked_ticks = numberOfTicksLocked();
+        uint128 locked_ticks = _numberOfTicksLocked();
         if (locked_ticks == 0) { 
                s_service_provider.transfer(0,false,128);
         } else {

@@ -37,7 +37,7 @@ contract RecurringPaymentsRoot is Constants {
         }(wallet, pplan);
     }
 
-    function onDeployService(address service) external view {
+    function onDeployService(address service) external view onlyFrom(c_sm_builder) {
         require(msg.sender == address(c_sm_builder), E_UNAUTHORIZED);
         emit ServiceDeployed(service);
     }

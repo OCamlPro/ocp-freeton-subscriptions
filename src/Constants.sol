@@ -14,11 +14,6 @@ contract Constants is IConstants {
 
     uint8 constant E_INVARIANT_BROKEN = 201;
 
-    modifier onlyOwner {
-        require(msg.pubkey() == tvm.pubkey(), E_UNAUTHORIZED);        
-        _;
-    }
-
     modifier onlyFrom(address a){
         require(msg.sender == a, E_UNAUTHORIZED);
         _;

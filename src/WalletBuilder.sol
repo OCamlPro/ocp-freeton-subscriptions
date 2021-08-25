@@ -14,7 +14,9 @@ contract WalletBuilder is Builder {
         code = o;
     }
 
-    function deploy(address subscriber) external responsible initialized returns(address, address) {
+    function deploy(address subscriber) external responsible returns(address, address) {
+        require (code.hasValue(), E_UNINITIALIZED);
+        
         Wallet ctr = new Wallet {
             value:(msg.value / 2),
             code: code.get(),
