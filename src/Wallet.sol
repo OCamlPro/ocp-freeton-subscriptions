@@ -7,6 +7,7 @@ import "interfaces/ISubscription.sol";
 import "Constants.sol";
 import "Buildable.sol";
 
+// Simple Crystal Wallet
 contract Wallet is Constants, Buildable {
 
     address static s_subscriber;
@@ -26,14 +27,8 @@ contract Wallet is Constants, Buildable {
         s_subscriber.transfer(0, false, 128);
     }
 
-    event Ok1();
-    event Ok2();
-    event Ok3();
-    event Ok4();
-
     // Only callable by s_subscription, transfers `amount` to `receiver`
     // If amount is negative, returns balance - | amount |
-    // WARNING: bug if amount is lower than internal fees
     function transferTo(address receiver, int128 amount) view external {
         require (c_subscription.hasValue(), E_UNINITIALIZED);
         require (msg.sender == c_subscription.get(), E_UNAUTHORIZED);
@@ -49,10 +44,12 @@ contract Wallet is Constants, Buildable {
         receiver.transfer(0,false,128);
     }
 
+    // Returns the balance of the contract without the value of the message
     function balance() external pure responsible returns(uint128){
         return {value: 0, flag: 64} address(this).balance - msg.value;
     }
 
+    // Accepts funds & returns the balance of the contract
     function transfer() external pure responsible returns(uint128){
         return address(this).balance;
     }

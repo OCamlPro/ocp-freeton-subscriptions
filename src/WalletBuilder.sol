@@ -5,6 +5,7 @@ pragma AbiHeader expire;
 import "Builder.sol";
 import "Wallet.sol";
 
+// Crystal Wallet Builder
 contract WalletBuilder is Builder {
 
     constructor(address buildable) public {
@@ -14,6 +15,7 @@ contract WalletBuilder is Builder {
         code = o;
     }
 
+    // Deploys a crystal wallet
     function deploy(address subscriber) external responsible returns(address, address) {
         require (code.hasValue(), E_UNINITIALIZED);
         

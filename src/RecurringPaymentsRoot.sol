@@ -8,9 +8,10 @@ import "SubManagerBuilder.sol";
 import "SubscriptionManager.sol";
 import "WalletBuilder.sol";
 
+// The Root contract, allowing to deploy services
 contract RecurringPaymentsRoot is Constants {
     
-    address static s_owner;
+    address static s_owner; // The contract owner
 
     WalletBuilder c_wal_builder; // The wallet builder
     SubscriptionBuilder c_sub_builder; // The subscription builder
@@ -29,7 +30,12 @@ contract RecurringPaymentsRoot is Constants {
         s_owner.transfer(0, false, 128);
     }
 
+    // Deploys a new subscription manager
     function deployService(address wallet, PaymentPlan pplan) external view {
+        tvm.accept(); 
+        // Not necessary because the function does not cost enough
+        // gas to fail without tvm.accept();
+
         c_sm_builder.deploy{
             value:0, 
             flag:128, 
@@ -37,9 +43,13 @@ contract RecurringPaymentsRoot is Constants {
         }(wallet, pplan);
     }
 
-    function onDeployService(address service) external view onlyFrom(c_sm_builder) {
+    // Continuation of `deployService` : emits the deployed service and refunds the
+    // wallet owner
+    function onDeployService(address wallet, address service) external view onlyFrom(c_sm_builder) {
         require(msg.sender == address(c_sm_builder), E_UNAUTHORIZED);
         emit ServiceDeployed(service);
+        wallet.transfer(0,false,128);
+        
     }
 
 }

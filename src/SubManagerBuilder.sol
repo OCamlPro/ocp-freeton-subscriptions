@@ -5,12 +5,13 @@ pragma AbiHeader expire;
 import "Builder.sol";
 import "SubscriptionManager.sol";
 
+// The builder of Subscriptions Managers.
 contract SubManagerBuilder is Builder {
 
-    uint64 m_id;
+    uint64 m_id; // A counter for IDs of subscription manager builders
 
-    address c_sub_builder;
-    address c_wal_builder;
+    address c_sub_builder; // The Subscription Builder address
+    address c_wal_builder; // The Wallet Builder address
 
     constructor(address buildable, address sub_builder, address wal_builder) public {
         tvm.accept();
@@ -22,7 +23,8 @@ contract SubManagerBuilder is Builder {
         c_wal_builder = wal_builder;
     }
 
-    function deploy(address wallet, PaymentPlan pplan) external responsible returns(address) {
+    // Deploys a Subscription Manager contract
+    function deploy(address wallet, PaymentPlan pplan) external responsible returns(address, address) {
         require (code.hasValue(), E_UNINITIALIZED);
 
         SubscriptionManager ctr = new SubscriptionManager {
@@ -35,7 +37,7 @@ contract SubManagerBuilder is Builder {
             }
         }(c_sub_builder, c_wal_builder, pplan);
         m_id ++;
-        return {value:0,flag:128} (address(ctr));
+        return {value:0,flag:128} (wallet, address(ctr));
     }
 
 }

@@ -5,6 +5,7 @@ pragma AbiHeader expire;
 import "Builder.sol";
 import "Subscription.sol";
 
+// Subscription Builder
 contract SubscriptionBuilder is Builder {
 
     constructor(address buildable) public {
