@@ -1,4 +1,4 @@
-ft multisig transfer 10 --from user1 --to RecurringPaymentsRoot deployService '{"wallet":"%{account:address:user1}", "pplan":{"amount":"1000000000","period":"1000000"}}'
+ft multisig transfer 10 --from user1 --to RecurringPaymentsRoot deployService '{"wallet":"%{account:address:user1}", "pplan":{"amount":"1000000000","period":"1000000","root_token":"0:0000000000000000000000000000000000000000000000000000000000000000"}}'
 
 service_list=($(ft inspect --past RecurringPaymentsRoot 2>&1 | grep 'Event ServiceDeployed' | sed 's/.*\"value0\":\"//g' | sed 's/\".*//g'))
 service=${service_list[-1]}

@@ -33,7 +33,9 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
     event SubscriptionComplete(address subscriber, address subscription, address wallet);
 
     mapping(address => Subscription) m_subscriptions;
-    // Subscriptions (TODO: remove)
+    // Subscriptions
+    // This should not be in the contract, as it is only useful for
+    // claiming all due subscriptions, which can be done outside the blockchain
     
     constructor(address sub_builder_address, address wal_builder_address, PaymentPlan pplan) public {
         tvm.accept();
@@ -95,6 +97,7 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
         IWallet(wallet).init{value:0, flag:128}(subscription);
     }
 
+    // Claims all the subscriptions
     function claimSubscriptions() external override {
         tvm.accept();
         for(( ,Subscription s) : m_subscriptions) {
@@ -102,24 +105,4 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
         }
         s_service_provider.transfer(0,false,128);
     }
-
-    // TODO: service provider payment
-
-    //// Pauses the subscription 
-    //// Can only be called by the subscriber
-    //function pause() override external{
-    //    require(false);
-    //}
-    
-    //// Resumes a paused the subscription 
-    //// Can only be called by the subscriber
-    //function resume() override external{
-    //    require(false);
-    //}
-
-    //// Cancels the current subscription 
-    //// Can only be called by the subscriber
-    //function cancel() override external{
-    //    require(false);
-    //}
 }
