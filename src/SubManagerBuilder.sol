@@ -24,7 +24,7 @@ contract SubManagerBuilder is Builder {
 
     function deploy(address wallet, PaymentPlan pplan) external responsible initialized returns(address) {
         SubscriptionManager ctr = new SubscriptionManager {
-            value:(msg.value / 3),
+            value:(msg.value / 2),
             code: code.get(),
             varInit:{
                 s_id: m_id,
@@ -33,7 +33,7 @@ contract SubManagerBuilder is Builder {
             }
         }(c_sub_builder, c_wal_builder, pplan);
         m_id ++;
-        return {value:(msg.value / 3)} (address(ctr));
+        return {value:0,flag:128} (address(ctr));
     }
 
 }

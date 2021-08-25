@@ -16,5 +16,8 @@ wallet=${wallet_list[-1]}
 
 echo "Subscription address = $subscription"
 echo "Wallet address = $wallet"
-ft account create SubscriptionInstance --contract Subscription --address $subscription -f
-ft account create WalletInstance --contract Wallet --address $wallet -f
+ft account create SubscriptionInstance --contract Subscription --address $subscription -f &&
+ft account create WalletInstance --contract Wallet --address $wallet -f &&
+ft multisig transfer 5 --from user1 --to SubscriptionInstance refillAccount '{"expected_gas":"100000000"}' &&
+ft multisig transfer 1 --from user1 --to SubscriptionInstance cancelSubscription # &&
+# ft multisig transfer 1 --from user1 --to SubscriptionInstance providerClaim

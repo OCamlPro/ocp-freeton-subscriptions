@@ -38,33 +38,19 @@ contract Wallet is Constants, Buildable {
         require (c_subscription.hasValue(), E_UNINITIALIZED);
         require (msg.sender == c_subscription.get(), E_UNAUTHORIZED);
         if (amount < 0) {
-            tvm.rawReserve(uint128(-1 * amount), 0);
-            receiver.transfer(0,false,128);
+            tvm.rawReserve(uint128(-1 * amount), 2);
+            // Reserves the min between amount and the balance
         } else {
-            receiver.transfer(uint128(amount),false);
+            if (address(this).balance > uint128(amount) + msg.value) {
+                tvm.rawReserve(uint128(amount) + msg.value, 3);
+                // Reserves balance - amount, or nothing if amount > balance
+            }
         }
-    }
-
-    function transferToCallback(address receiver, int128 amount) view external responsible returns(uint128){
-       
-        require (c_subscription.hasValue(), E_UNINITIALIZED);
-        require (msg.sender == c_subscription.get(), E_UNAUTHORIZED);
-
-        int128 to_transfer;
-        if (amount < 0) {
-            to_transfer = int128(address(this).balance) - amount;
-        } else {
-            to_transfer = amount;
-        }
-
-        require (to_transfer >= 0, E_INVALID_AMOUNT);
-
-        receiver.transfer(uint128(to_transfer), false);
-        return {value:msg.value, flag: 0} (address(this).balance - uint128(to_transfer));
+        receiver.transfer(0,false,128);
     }
 
     function balance() external pure responsible returns(uint128){
-        return {value:msg.value, flag: 0} address(this).balance;
+        return {value: 0, flag: 64} address(this).balance - msg.value;
     }
 
     function transfer() external pure responsible returns(uint128){

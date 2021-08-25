@@ -88,7 +88,6 @@ contract Subscription is ISubscription, Constants, Buildable {
 
     function lockedFunds() public view responsible returns(uint128){
         uint128 res = numberOfTicksLocked() * c_payment_plan.amount;
-        emit LockedFunds(res);
         return res;
     
     }
@@ -104,6 +103,7 @@ contract Subscription is ISubscription, Constants, Buildable {
     // Entry points
 
     function refillAccount(uint128 expected_gas) override external {
+        tvm.accept();
         c_wallet.transfer{
             value:msg.value - expected_gas,
             flag:0,
@@ -113,13 +113,14 @@ contract Subscription is ISubscription, Constants, Buildable {
 
     function onRefillAccount(uint128 wallet_balance) external onlyFrom(address(c_wallet)){
         tvm.accept();
+        // Now using the 'expected_gas' from the refillAccount call.
         emit WalletBalance(wallet_balance);
         uint128 locked = lockedFunds();
 
         if (locked > 0) {
             c_wallet.transferToCallback{
-                value:msg.value, 
-                flag:0, 
+                value:0, 
+                flag:64, 
                 callback:this.onOnRefillAccount
             }(s_service_provider,int128(locked));
         } else {
@@ -132,7 +133,6 @@ contract Subscription is ISubscription, Constants, Buildable {
     event StartNow();
 
     function onOnRefillAccount(uint128 wallet_balance) public onlyFrom(address(c_wallet)){
-        tvm.accept();
         m_wallet_balance = wallet_balance;
         if (now > subscribedUntil()) {
             // Subscription stopped at some point.
@@ -150,22 +150,27 @@ contract Subscription is ISubscription, Constants, Buildable {
     function cancelSubscription() override external onlyFrom(s_subscriber){
         tvm.accept();
         int128 locked = -1 * int128(lockedFunds());
-        c_wallet.transferTo{value:msg.value, flag:128}(s_subscriber, locked);
+        c_wallet.transferTo{value:0, flag:64}(s_subscriber, locked);
     }
 
-    function providerClaim() override public {
+    function providerClaim() override external {
         
+        tvm.accept();
         uint128 locked_ticks = numberOfTicksLocked();
-        if (locked_ticks == 0) { return; }
-        
-        m_expected_start.set(m_start + locked_ticks * c_payment_plan.period); // Value will be used on onProviderClaim
+        if (locked_ticks == 0) { 
+               s_service_provider.transfer(0,false,128);
+        } else {
+            m_expected_start.set(m_start + locked_ticks * c_payment_plan.period); 
+            // Value will be used on onProviderClaim
 
-        c_wallet.transferToCallback{
-            value:msg.value, 
-            flag:0, 
-            callback:this.onProviderClaim
+            c_wallet.transferTo{
+                value:0.1 ton, 
+                flag:0
+            }
+            (s_service_provider,int128(locked_ticks * c_payment_plan.amount));
+
+            c_wallet.balance{value:0,flag:128,callback:this.onProviderClaim}();
         }
-        (s_service_provider,int128(locked_ticks * c_payment_plan.amount));
 
     }
 

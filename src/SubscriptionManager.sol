@@ -67,8 +67,8 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
     function subscribe(address subscriber) override external{
         tvm.accept();
         c_wal_builder.deploy{
-            value:msg.value, 
-            flag:0, 
+            value:0, 
+            flag:64, 
             callback: this.onWalletDeploy
         } (subscriber);
     }
@@ -76,8 +76,8 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
     function onWalletDeploy(address subscriber, address wallet) external view {
         require(msg.sender == address(c_wal_builder), E_UNAUTHORIZED);
         c_sub_builder.deploy{
-            value:msg.value,
-            flag:0,
+            value:0,
+            flag:64,
             callback:this.onSubscriptionDeploy
         }(
         wallet,
@@ -91,7 +91,7 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
         require(msg.sender == address(c_sub_builder), E_UNAUTHORIZED);
         m_subscriptions.add(subscriber, Subscription(subscription));
         emit SubscriptionComplete(subscriber, subscription, wallet);
-        IWallet(wallet).init{value:0, flag:128}(subscription);
+        IWallet(wallet).init{value:0, flag:64}(subscription);
     }
 
     // TODO: service provider payment

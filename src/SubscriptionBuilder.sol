@@ -22,7 +22,7 @@ contract SubscriptionBuilder is Builder {
         PaymentPlan pplan
     ) external responsible initialized returns(address, address, address) {
         Subscription ctr = new Subscription {
-            value:(msg.value / 3),
+            value:(msg.value / 2),
             code: code.get(),
             varInit:{
                 s_manager: manager,

@@ -10,7 +10,7 @@ contract Buildable is IBuildable {
 
     // Shares its own code.
     function thisIsMyCode() external override responsible returns(TvmCell){
-        return {value:msg.value, flag:0} tvm.code();
+        return {value:0, flag:64} tvm.code();
     }
 
 }

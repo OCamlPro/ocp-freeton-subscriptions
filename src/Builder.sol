@@ -13,7 +13,7 @@ abstract contract Builder is Constants {
     
     function init() external view{
         require(!code.hasValue(), E_ALREADY_INITIALIZED);
-        ref.thisIsMyCode{value:msg.value, flag:0, callback:this.updateCode}();
+        ref.thisIsMyCode{value: 0, flag:64, callback:this.updateCode}();
     }
 
     function updateCode(TvmCell c) external onlyFrom(address(ref)){
