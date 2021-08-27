@@ -16,8 +16,125 @@ import "lib/Transferable.sol";
 
 import "../interfaces/ISubscription.sol";
 
+contract SubscriptionDebot is Debot {
+    bytes m_icon;
+    address g_contract;
+
+    function setIcon(bytes icon) public {
+        require(msg.pubkey() == tvm.pubkey(), 100);
+        tvm.accept();
+        m_icon = icon;
+    }
+
+    /// @notice Returns Metadata about DeBot.
+    function getDebotInfo() public functionID(0xDEB) override view returns(
+        string name, string version, string publisher, string caption, string author,
+        address support, string hello, string language, string dabi, bytes icon
+    ) {
+        name = "HelloWorld";
+        version = "0.2.0";
+        publisher = "TON Labs";
+        caption = "Start develop DeBot from here";
+        author = "TON Labs";
+        support = address.makeAddrStd(0, 0x841288ed3b55d9cdafa806807f02a0ae0c169aa5edfe88a789a6482429756a94);
+        hello = "Hello, i am a HelloWorld DeBot.";
+        language = "en";
+        dabi = m_debotAbi.get();
+        icon = m_icon;
+    }
+
+    function getRequiredInterfaces() public view override
+      returns (uint256[] interfaces) {
+      return [
+            Terminal.ID,
+            AmountInput.ID,
+            ConfirmInput.ID,
+            AddressInput.ID,
+            Menu.ID ];
+    }
+
+    function setUserInput(string value) public {
+        // TODO: continue DeBot logic here...
+        Terminal.print(0, format("You have entered \"{}\"", value));
+    }
+
+    /// @notice Entry point function for DeBot.
+    function start() public override {
+      AddressInput.get(tvm.functionId(onStart),
+        "Which subscription do you want to work with?");
+    }
+  
+    function onStart(address subs) public {
+      g_contract = subs;
+    mainMenu();
+  }
+    function mainMenu() public {
+        Terminal.print(0, "Hello and welcome to your Subscription.");
+        Terminal.print(0, "Please select an action.");
+        Terminal.print(0, "1. When does my subscription ends?");
+        Terminal.print(0, "2. I want to refill my account.");
+        Terminal.print(0, "3. I want to cancel my subscription.");
+        Terminal.input(tvm.functionId(setUserMainAction), "Action: ", false);
+    }
+
+    function setUserMainAction(string value) public {
+        if (value == "1"){
+            _handleSubscriptionEnd();
+        } else if (value == "2") {
+            _handleRefillAccount();
+        } else if (value == "3") {
+            _handleCancel();
+        } else {
+            Terminal.print(0, format("You have entered \"{}\", which is an invalid action.", value));
+            mainMenu();
+        }
+    }
+
+    function _handleSubscriptionEnd() view internal{
+        ISubscription(g_contract).subscribedUntil{
+            extMsg:true,
+            time:uint64(now),
+            expire:0,
+            sign:false,
+            callbackId:tvm.functionId(this.onSuccessSubscriptionEnd),
+            onErrorId:0,
+            abiVer:2
+        }();
+    }
+
+    function onSuccessSubscriptionEnd(uint128 end) external{
+        Terminal.print(0, format("Your subscription ends at \"{}\"",end));
+        mainMenu();
+    }
+
+    function _handleRefillAccount() internal {
+        Terminal.print(0, "Please enter the auction address. TODO");
+        //Terminal.input(tvm.functionId(setUserManage), "Action: ", false);
+    }
+
+    function _handleCancel() internal view {
+        ISubscription(g_contract).cancelSubscription{
+            extMsg:true,
+            time:uint64(now),
+            expire:0,
+            sign:true,
+            callbackId:tvm.functionId(this.onSuccessCancel),
+            onErrorId:0,
+            abiVer:2
+        }();
+    }
+
+    function onSuccessCancel() external {
+        Terminal.print(0, format("Your unused funds have been refunded."));
+        mainMenu();
+    }
+
+
+}
+
 // Interface of the contract with which to interact
 
+/*
 interface IContract {
   function setter ( uint256 x ) external ;
   function getter () external returns ( uint256 y ) ;
@@ -97,6 +214,9 @@ contract SubscriptionDebot is Debot, Upgradable, Transferable, Utility {
 
   function onStart(address subs) public {
     g_contract = subs;
+    //mainMenu();
+  }
+  function mainMenu() public {
     Terminal.print(0, "Hello and welcome to your Subscription.");
     Terminal.print(0, "Please select an action.");
     Terminal.print(0, "1. When does my subscription ends?");
@@ -114,6 +234,7 @@ contract SubscriptionDebot is Debot, Upgradable, Transferable, Utility {
       _handleCancel();
     } else {
       Terminal.print(0, format("You have entered \"{}\", which is an invalid action.", value));
+      mainMenu();
     }
   }
 
@@ -131,6 +252,7 @@ contract SubscriptionDebot is Debot, Upgradable, Transferable, Utility {
 
   function onSuccessSubscriptionEnd(uint128 end) external{
     Terminal.print(0, format("Your subscription ends at \"{}\"",end));
+    mainMenu();
   }
 
   function _handleRefillAccount() internal {
@@ -138,9 +260,21 @@ contract SubscriptionDebot is Debot, Upgradable, Transferable, Utility {
     //Terminal.input(tvm.functionId(setUserManage), "Action: ", false);
   }
 
-  function _handleCancel() internal {
-    Terminal.print(0, "Please enter the auction address. TODO");
-    // Terminal.input(tvm.functionId(setUserParticipate), "Action: ", false);
+  function _handleCancel() internal view {
+    ISubscription(g_contract).cancelSubscription{
+        extMsg:true,
+        time:uint64(now),
+        expire:0,
+        sign:true,
+        callbackId:tvm.functionId(this.onSuccessCancel),
+        onErrorId:0,
+        abiVer:2
+      }();
   }
 
+  function onSuccessCancel() external {
+    Terminal.print(0, format("Your unused funds have been refunded."));
+    mainMenu();
+  }
 }
+*/
