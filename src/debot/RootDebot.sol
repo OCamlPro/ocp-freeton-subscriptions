@@ -42,11 +42,11 @@ abstract contract Utility {
     }
     }
 
-    contract SubscriptionManagerDebot is Debot, Upgradable, Transferable, Utility {
+    contract RootDebot is Debot, Upgradable, Transferable, Utility {
 
     string constant debot_name = "Subscription Manager Debot" ;
     string constant debot_publisher = "OCamlPro" ;
-    string constant debot_caption = "Subscription Manager Debot" ;
+    string constant debot_caption = "Root Subscription Manager Debot" ;
     string constant debot_author = "Steven de Oliveira" ;
     string constant debot_language = "en" ;
     // your address with 0x instead of 0:
@@ -57,12 +57,16 @@ abstract contract Utility {
         0x66e01d6df5a8d7677d9ab2daf7f258f1e2a7fe73da5320300395f99e01dc3b5f ;
 
     string constant debot_hello =
-        "Hi, I will help you work with Service Manager contracts";
+        "Hi, I will help you work with the Root Subscription Manager contract";
 
     bytes debot_icon;
 
     address g_contract;
-    address g_subscriber;
+
+    address g_wallet;
+    address g_root_token; // For TIP3
+    uint128 g_duration;
+    uint128 g_amount;
 
     function getRequiredInterfaces() public view override
         returns (uint256[] interfaces) {
@@ -82,6 +86,12 @@ abstract contract Utility {
 
     function onCodeUpgrade() internal override{}
 
+    function setContract(address root){
+        require(tvm.pubkey() == msg.pubkey, 101);
+        tvm.accept();
+        g_contract = root;
+    }
+
     function getDebotInfo() public functionID(0xDEB) view override returns(
             string name, string version, string publisher, string caption, string author,
             address support, string hello, string language, string dabi, bytes icon){
@@ -90,70 +100,96 @@ abstract contract Utility {
             debot_language, "?",bytes(""));
     }
 
-    /// @notice Entry point function for DeBot.
-    function start() public override {
-        AddressInput.get(tvm.functionId(onStart),
-        "Which service do you want to work with?");
-    }
-
-    function onStart(address subman) public{
-        g_contract = subman;
-        mainMenu();
-    } 
-
-    function mainMenu () public {
-        g_contract = subs;
-        Terminal.print(0, "Hello and welcome to the Service Manager.");
-        Terminal.print(0, "Please select an action.");
-        Terminal.print(0, "1. Subscribe");
-        Terminal.print(0, "2. Claim the subscription fees (owner only)");
+    function start () public {
+        g_wallet = address(0);
+        g_root_token = address(0);
+        g_duration = 0;
+        g_amount = 0;
+        Terminal.print(0, "Hello and welcome to the Service Deployer.");
+        Terminal.print(0, "You can here deploy new services.");
+        Terminal.print(0, "1. Service payable with TON crystals");
+        Terminal.print(0, "2. Service payable with a TIP3 token (NOT RELEASED YET)");
         Terminal.input(tvm.functionId(setUserMainAction), "Action: ", false);
     }
 
     function setUserMainAction(string value) public {
         if (value == "1"){
-            _handleSubscription();
+            _selectWallet();
         } else if (value == "2") {
-            _handleClaim();
+            _selectRootContract();
         } else {
             Terminal.print(0, format("You have entered \"{}\", which is an invalid action.", value));
             mainMenu();
         }
     }
 
-    function _handleSubscription() internal {
-        AddressInput.get(tvm.functionId(onSubscriptionAddress),
-        "Enter your address, it will be your subscription identifier."
-    );
-
-    function onSubscriptionAddress(address subscriber){
-        g_subscriber = subscriber;
-        ISubscriptionManager(g_contract).subscribe{
-            extMsg:true,
-            time:uint64(now),
-            expire:0,
-            sign:false,
-            callbackId:tvm.functionId(this.onSubscription),
-            onErrorId:0,
-            abiVer:2
-        }(subscriber);
+    function _selectRootContract() internal {
+        AddressInput.get(tvm.functionId(setRootContract),
+            "Enter the TIP3 root contract address"
+        );
     }
 
-    function onSubscription() internal {
-        Terminal.print(0, "You have successfully been subscribed!");
-        ISubscription.getSubscription{
-            extMsg:true,
-            time:uint64(now),
-            expire:0,
-            sign:false,
-            callbackId:tvm.functionId(SubscriptionDebot(g_subscription_debot).onSubscription),
-            onErrorId:0,
-            abiVer:2
-        }(g_subscriber);
+    function setRootContract(address root) external {
+        g_root_token = root;
+        _selectWallet();
     }
 
-    function _handleClaim() internal {
-        ISubscriptionManager(g_contract).claimSubscriptions();
+    function _selectWallet() external {
+        AddressInput.get(tvm.functionId(setWallet),
+            "Enter your wallet address"
+        );
     }
+
+    function setWallet(address wallet) external {
+        g_wallet = wallet;
+        AmountInput(tvm.functionId(setDuration),
+            "What is the subscription duration of your service?"
+        );
+    }
+
+    function setDuration(uint128 duration) external {
+        g_duration = duration;
+        AmountInput(tvm.functionId(setDuration),
+            "What is the subscription amount?"
+        );
+    }
+
+    function setAmount(uint amount) external {
+        g_amount = amount;
+        check();
+    }
+
+    function check(){
+        if (g_root_token == 0) {
+            Terminal.print(0, "You are about to deploy a new service with parameters:");
+            Terminal.print(0, format("Wallet: \"{}\"", g_wallet));
+            Terminal.print(0, format("Duration of subscription: \"{}\"", g_duration));
+            Terminal.print(0, format("Amount: \"{}\"", g_amount));
+            ConfirmInput.get(tvm.functionId(onCheck()),"Are you sure?");
+    }
+
+    function onCheck(bool ok){
+        if (ok) {
+                RecurringPaymentsRoot(g_contract).deployService{
+                extMsg:true,
+                time:uint64(now),
+                expire:0,
+                sign:false,
+                callbackId:0, // TODO: Get Deployed Service address!
+                onErrorId:0,
+                abiVer:2
+            }(
+                g_wallet,
+                PaymentPlan(
+                    g_amount,
+                    g_period,
+                    g_root_token
+                )
+            );
+        } else {
+            start();
+        }
+    }
+
 
 }
