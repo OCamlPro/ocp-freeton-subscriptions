@@ -1,6 +1,8 @@
-pragma ton-solidity ^0.44.0;
+0pragma ton-solidity ^0.44.0;
 pragma AbiHeader time;
 pragma AbiHeader expire;
+
+import "interfaces/IRecurringPaymentRoot.sol";
 
 import "Constants.sol";
 import "SubscriptionBuilder.sol";
@@ -9,7 +11,7 @@ import "SubscriptionManager.sol";
 import "WalletBuilder.sol";
 
 // The Root contract, allowing to deploy services
-contract RecurringPaymentsRoot is Constants {
+contract RecurringPaymentsRoot is Constants, IRecurringPaymentRoot {
     
     address static s_owner; // The contract owner
 
@@ -31,7 +33,7 @@ contract RecurringPaymentsRoot is Constants {
     }
 
     // Deploys a new subscription manager
-    function deployService(address wallet, PaymentPlan pplan) external view {
+    function deployService(address wallet, PaymentPlan pplan) external view override {
         tvm.accept(); 
         // Not necessary because the function does not cost enough
         // gas to fail without tvm.accept();
@@ -49,7 +51,6 @@ contract RecurringPaymentsRoot is Constants {
         require(msg.sender == address(c_sm_builder), E_UNAUTHORIZED);
         emit ServiceDeployed(service);
         wallet.transfer(0,false,128);
-        
     }
 
 }

@@ -14,7 +14,8 @@ import "lib/Menu.sol";
 import "lib/Upgradable.sol";
 import "lib/Transferable.sol";
 
-import "../interfaces/ISubscriptionManager.sol";
+import "../interfaces/IRecurringPaymentRoot.sol";
+import "../Constants.sol";
 
 // Interface of the contract with which to interact
 
@@ -42,7 +43,7 @@ abstract contract Utility {
     }
     }
 
-    contract RootDebot is Debot, Upgradable, Transferable, Utility {
+    contract RootDebot is Debot, Upgradable, Transferable, Utility, Constants {
 
     string constant debot_name = "Subscription Manager Debot" ;
     string constant debot_publisher = "OCamlPro" ;
@@ -65,7 +66,7 @@ abstract contract Utility {
 
     address g_wallet;
     address g_root_token; // For TIP3
-    uint128 g_duration;
+    uint64 g_duration;
     uint128 g_amount;
 
     function getRequiredInterfaces() public view override
@@ -86,8 +87,8 @@ abstract contract Utility {
 
     function onCodeUpgrade() internal override{}
 
-    function setContract(address root){
-        require(tvm.pubkey() == msg.pubkey, 101);
+    function setContract(address root) external {
+        require(tvm.pubkey() == msg.pubkey(), 101);
         tvm.accept();
         g_contract = root;
     }
@@ -100,7 +101,7 @@ abstract contract Utility {
             debot_language, "?",bytes(""));
     }
 
-    function start () public {
+    function start () public override {
         g_wallet = address(0);
         g_root_token = address(0);
         g_duration = 0;
@@ -119,7 +120,7 @@ abstract contract Utility {
             _selectRootContract();
         } else {
             Terminal.print(0, format("You have entered \"{}\", which is an invalid action.", value));
-            mainMenu();
+            start();
         }
     }
 
@@ -129,46 +130,53 @@ abstract contract Utility {
         );
     }
 
-    function setRootContract(address root) external {
+    function setRootContract(address root) public {
         g_root_token = root;
         _selectWallet();
     }
 
-    function _selectWallet() external {
+    function _selectWallet() internal {
         AddressInput.get(tvm.functionId(setWallet),
             "Enter your wallet address"
         );
     }
 
-    function setWallet(address wallet) external {
+    function setWallet(address wallet) public {
         g_wallet = wallet;
-        AmountInput(tvm.functionId(setDuration),
-            "What is the subscription duration of your service?"
+        AmountInput.get(tvm.functionId(setDuration),
+            "What is the subscription duration of your service?",
+            0,
+            1,
+            MAX_INT64
         );
     }
 
-    function setDuration(uint128 duration) external {
-        g_duration = duration;
-        AmountInput(tvm.functionId(setDuration),
-            "What is the subscription amount?"
+    function setDuration(uint duration) public {
+        g_duration = uint64(duration);
+        AmountInput.get(tvm.functionId(setDuration),
+            "What is the subscription amount?",
+            0,
+            1,
+            MAX_INT128
         );
     }
 
-    function setAmount(uint amount) external {
-        g_amount = amount;
+    function setAmount(uint amount) public {
+        g_amount = uint128(amount);
         check();
     }
 
-    function check(){
-        if (g_root_token == 0) {
+    function check() public {
+        if (g_root_token == address(0)) {
             Terminal.print(0, "You are about to deploy a new service with parameters:");
             Terminal.print(0, format("Wallet: \"{}\"", g_wallet));
             Terminal.print(0, format("Duration of subscription: \"{}\"", g_duration));
             Terminal.print(0, format("Amount: \"{}\"", g_amount));
-            ConfirmInput.get(tvm.functionId(onCheck()),"Are you sure?");
+            ConfirmInput.get(tvm.functionId(onCheck),"Are you sure?");
+        }
     }
 
-    function onCheck(bool ok){
+    function onCheck(bool ok) public {
         if (ok) {
                 RecurringPaymentsRoot(g_contract).deployService{
                 extMsg:true,
@@ -182,7 +190,7 @@ abstract contract Utility {
                 g_wallet,
                 PaymentPlan(
                     g_amount,
-                    g_period,
+                    g_duration,
                     g_root_token
                 )
             );
