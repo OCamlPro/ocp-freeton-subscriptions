@@ -140,8 +140,8 @@ abstract contract Utility {
         );
     }
 
-    function onSubscriptionAddress(address subscriber) public {
-        g_subscriber = subscriber;
+    function onSubscriptionAddress(address value) public {
+        g_subscriber = value;
         ISubscriptionManager(g_contract).subscribe{
             extMsg:true,
             time:uint64(now),
@@ -150,7 +150,7 @@ abstract contract Utility {
             callbackId:tvm.functionId(this.onSubscription),
             onErrorId:0,
             abiVer:2
-        }(subscriber);
+        }(value);
     }
 
     function onSubscription() public {
@@ -166,8 +166,8 @@ abstract contract Utility {
         }(g_subscriber);
     }
 
-    function onSubscriptionSuccess(address subscription) public view {
-        SubscriptionDebot(g_subscription_debot).onStart(subscription);
+    function onSubscriptionSuccess(address value) public view {
+        SubscriptionDebot(g_subscription_debot).onStart(value);
     }
 
     function _handleClaim() internal view {

@@ -60,8 +60,8 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
 
     // Returns the subscription details of the subscriber address 
     // in argument
-    function getSubscription(address subscriber) override external view returns(address){
-        return m_subscriptions[subscriber];
+    function getSubscription(address subscriber) override external view returns(address value){
+        value = m_subscriptions[subscriber];
     }
 
     // Entry points

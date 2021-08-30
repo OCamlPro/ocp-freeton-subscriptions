@@ -115,11 +115,11 @@ contract Subscription is ISubscription, Constants, Buildable {
     }
 
     // Returns the end of the last period the user subscribed to
-    function subscribedUntil() override public view responsible returns(uint128) {
-        uint128 res = m_start + _numberOfTicksLocked() * c_payment_plan.period;
+    function subscribedUntil() override public view responsible returns(uint128 end) {
+        end = m_start + _numberOfTicksLocked() * c_payment_plan.period;
         emit Start(m_start);
-        emit SubscribedUntil(res);
-        return {value:0, flag:64} res;
+        emit SubscribedUntil(end);
+        return {value:0, flag:64} end;
     }
 
 

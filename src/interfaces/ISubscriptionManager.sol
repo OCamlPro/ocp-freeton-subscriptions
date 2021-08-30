@@ -27,7 +27,7 @@ interface ISubscriptionManager is IConstants {
     function getWallet() external view returns(address);
     // Returns the address of the owner wallet
 
-    function getSubscription(address) external view returns(address);
+    function getSubscription(address) external view returns(address value);
     // Return subscriptions
 
     // Entry points
