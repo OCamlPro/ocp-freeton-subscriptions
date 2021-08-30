@@ -78,6 +78,12 @@ abstract contract Utility {
         m_icon = icon;
     }
 
+    function setSubscriptionDebot(address debot) public {
+        require(msg.pubkey() == tvm.pubkey(), 100);
+        tvm.accept();
+        g_subscription_debot = debot;
+    }
+
     function onCodeUpgrade() internal override{}
 
     /// @notice Returns Metadata about DeBot.

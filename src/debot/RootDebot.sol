@@ -229,6 +229,9 @@ contract RootDebot is Debot, Constants {
 
     bytes m_icon;
 
+    address g_subscription_manager_debot;
+    address g_subscription_debot;
+
     address g_contract;
 
     address g_wallet;
@@ -242,6 +245,12 @@ contract RootDebot is Debot, Constants {
         m_icon = icon;
     }
 
+    function setSubManagerDebot(address debot) public {
+        require(msg.pubkey() == tvm.pubkey(), 100);
+        tvm.accept();
+        g_subscription_manager_debot = debot;
+    }
+
     /// @notice Returns Metadata about DeBot.
     function getDebotInfo() public functionID(0xDEB) override view returns(
         string name, string version, string publisher, string caption, string author,
@@ -251,7 +260,7 @@ contract RootDebot is Debot, Constants {
         version = "0.0.1";
         publisher = debot_publisher;
         caption = debot_caption;
-        author = debotAuthor;
+        author = debot_author;
         support = debot_support;
         hello = debot_hello;
         language = debot_language;
@@ -363,6 +372,7 @@ contract RootDebot is Debot, Constants {
                 )
             );
         } else {
+            Terminal.print(0, "Going back to main menu.");
             start();
         }
     }
