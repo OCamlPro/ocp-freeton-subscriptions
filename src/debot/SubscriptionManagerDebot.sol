@@ -36,10 +36,10 @@ abstract contract Utility {
 
     function _tokens(uint128 nanotokens) internal pure
         returns (uint64, uint64) {
-        uint64 decimal = uint64(nanotokens / 1e9);
-        uint64 float = uint64(nanotokens - (decimal * 1e9));
-        return (decimal, float);
-    }
+            uint64 decimal = uint64(nanotokens / 1e9);
+            uint64 float = uint64(nanotokens - (decimal * 1e9));
+            return (decimal, float);
+        }
     }
 
     contract SubscriptionManagerDebot is Debot, Upgradable, Transferable, Utility {
