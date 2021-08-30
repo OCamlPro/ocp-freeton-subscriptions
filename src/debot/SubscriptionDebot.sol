@@ -17,7 +17,19 @@ import "lib/Transferable.sol";
 import "../interfaces/ISubscription.sol";
 
 contract SubscriptionDebot is Debot {
+    
+    string constant debot_name = "Subscription Debot" ;
+    string constant debot_publisher = "OCamlPro" ;
+    string constant debot_caption = "Subscription Debot" ;
+    string constant debot_author = "OCamlPro" ;
+    string constant debot_language = "en" ;
+    address constant debot_support = address(0); // TODO
+
+    string constant debot_hello =
+        "Hi, I will help you work with Subscription contracts";
+
     bytes m_icon;
+
     address g_contract;
 
     function setIcon(bytes icon) public {
@@ -31,14 +43,14 @@ contract SubscriptionDebot is Debot {
         string name, string version, string publisher, string caption, string author,
         address support, string hello, string language, string dabi, bytes icon
     ) {
-        name = "HelloWorld";
-        version = "0.2.0";
-        publisher = "TON Labs";
-        caption = "Start develop DeBot from here";
-        author = "TON Labs";
-        support = address.makeAddrStd(0, 0x841288ed3b55d9cdafa806807f02a0ae0c169aa5edfe88a789a6482429756a94);
-        hello = "Hello, i am a HelloWorld DeBot.";
-        language = "en";
+        name = debot_name;
+        version = "0.0.1";
+        publisher = debot_publisher;
+        caption = debot_caption;
+        author = debot_author;
+        support = debot_support;
+        hello = debot_hello;
+        language = debot_language;
         dabi = m_debotAbi.get();
         icon = m_icon;
     }

@@ -15,6 +15,8 @@ import "lib/Upgradable.sol";
 import "lib/Transferable.sol";
 
 import "../interfaces/ISubscriptionManager.sol";
+import "../interfaces/ISubscription.sol";
+import "SubscriptionDebot.sol";
 
 // Interface of the contract with which to interact
 
@@ -47,22 +49,18 @@ abstract contract Utility {
     string constant debot_name = "Subscription Manager Debot" ;
     string constant debot_publisher = "OCamlPro" ;
     string constant debot_caption = "Subscription Manager Debot" ;
-    string constant debot_author = "Steven de Oliveira" ;
+    string constant debot_author = "OCamlPro" ;
     string constant debot_language = "en" ;
-    // your address with 0x instead of 0:
-    uint8 constant debot_version_major = 1 ;
-    uint8 constant debot_version_minor = 0 ;
-    uint8 constant debot_version_fix = 0 ;
-    uint256 constant debot_support =
-        0x66e01d6df5a8d7677d9ab2daf7f258f1e2a7fe73da5320300395f99e01dc3b5f ;
+    address constant debot_support = address(0); // TODO
 
     string constant debot_hello =
         "Hi, I will help you work with Service Manager contracts";
 
-    bytes debot_icon;
+    bytes m_icon;
 
     address g_contract;
     address g_subscriber;
+    address g_subscription_debot;
 
     function getRequiredInterfaces() public view override
         returns (uint256[] interfaces) {
@@ -77,17 +75,26 @@ abstract contract Utility {
     function setIcon(bytes icon) public {
         require(msg.pubkey() == tvm.pubkey(), 100);
         tvm.accept();
-        debot_icon = icon;
+        m_icon = icon;
     }
 
     function onCodeUpgrade() internal override{}
 
-    function getDebotInfo() public functionID(0xDEB) view override returns(
-            string name, string version, string publisher, string caption, string author,
-            address support, string hello, string language, string dabi, bytes icon){
-            return (debot_name, "0", debot_publisher, debot_caption,
-            debot_author, address(debot_support), debot_hello, 
-            debot_language, "?",bytes(""));
+    /// @notice Returns Metadata about DeBot.
+    function getDebotInfo() public functionID(0xDEB) override view returns(
+        string name, string version, string publisher, string caption, string author,
+        address support, string hello, string language, string dabi, bytes icon
+    ) {
+        name = debot_name;
+        version = "0.0.1";
+        publisher = debot_publisher;
+        caption = debot_caption;
+        author = debot_author;
+        support = debot_support;
+        hello = debot_hello;
+        language = debot_language;
+        dabi = m_debotAbi.get();
+        icon = m_icon;
     }
 
     /// @notice Entry point function for DeBot.
@@ -102,7 +109,6 @@ abstract contract Utility {
     } 
 
     function mainMenu () public {
-        g_contract = subs;
         Terminal.print(0, "Hello and welcome to the Service Manager.");
         Terminal.print(0, "Please select an action.");
         Terminal.print(0, "1. Subscribe");
@@ -122,11 +128,13 @@ abstract contract Utility {
     }
 
     function _handleSubscription() internal {
-        AddressInput.get(tvm.functionId(onSubscriptionAddress),
-        "Enter your address, it will be your subscription identifier."
-    );
+        AddressInput.get(
+            tvm.functionId(onSubscriptionAddress),
+            "Enter your address, it will be your subscription identifier."
+        );
+    }
 
-    function onSubscriptionAddress(address subscriber){
+    function onSubscriptionAddress(address subscriber) public {
         g_subscriber = subscriber;
         ISubscriptionManager(g_contract).subscribe{
             extMsg:true,
@@ -139,20 +147,24 @@ abstract contract Utility {
         }(subscriber);
     }
 
-    function onSubscription() internal {
+    function onSubscription() public {
         Terminal.print(0, "You have successfully been subscribed!");
-        ISubscription.getSubscription{
+        ISubscriptionManager(g_contract).getSubscription{
             extMsg:true,
             time:uint64(now),
             expire:0,
             sign:false,
-            callbackId:tvm.functionId(SubscriptionDebot(g_subscription_debot).onSubscription),
+            callbackId:tvm.functionId(onSubscriptionSuccess),
             onErrorId:0,
             abiVer:2
         }(g_subscriber);
     }
 
-    function _handleClaim() internal {
+    function onSubscriptionSuccess(address subscription) public view {
+        SubscriptionDebot(g_subscription_debot).onStart(subscription);
+    }
+
+    function _handleClaim() internal view {
         ISubscriptionManager(g_contract).claimSubscriptions();
     }
 

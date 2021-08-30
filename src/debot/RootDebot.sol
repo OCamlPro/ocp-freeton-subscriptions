@@ -215,18 +215,14 @@ import "lib/ConfirmInput.sol";
 import "../Constants.sol";
 import "../interfaces/IRecurringPaymentsRoot.sol";
 
-contract HelloDebot is Debot, Constants {
-    string constant debot_name = "Subscription Manager Debot" ;
+contract RootDebot is Debot, Constants {
+    string constant debot_name = "Root Subscription Manager Debot" ;
     string constant debot_publisher = "OCamlPro" ;
     string constant debot_caption = "Root Subscription Manager Debot" ;
-    string constant debot_author = "Steven de Oliveira" ;
+    string constant debot_author = "OCamlPro" ;
     string constant debot_language = "en" ;
     // your address with 0x instead of 0:
-    uint8 constant debot_version_major = 1 ;
-    uint8 constant debot_version_minor = 0 ;
-    uint8 constant debot_version_fix = 0 ;
-    uint256 constant debot_support =
-        0x66e01d6df5a8d7677d9ab2daf7f258f1e2a7fe73da5320300395f99e01dc3b5f ;
+    address constant debot_support = address(0) ; //TODO
 
     string constant debot_hello =
         "Hi, I will help you work with the Root Subscription Manager contract";
@@ -251,14 +247,14 @@ contract HelloDebot is Debot, Constants {
         string name, string version, string publisher, string caption, string author,
         address support, string hello, string language, string dabi, bytes icon
     ) {
-        name = "HelloWorld";
-        version = "0.2.0";
-        publisher = "TON Labs";
-        caption = "Start develop DeBot from here";
-        author = "TON Labs";
-        support = address.makeAddrStd(0, 0x841288ed3b55d9cdafa806807f02a0ae0c169aa5edfe88a789a6482429756a94);
-        hello = "Hello, i am a HelloWorld DeBot.";
-        language = "en";
+        name = debot_name;
+        version = "0.0.1";
+        publisher = debot_publisher;
+        caption = debot_caption;
+        author = debotAuthor;
+        support = debot_support;
+        hello = debot_hello;
+        language = debot_language;
         dabi = m_debotAbi.get();
         icon = m_icon;
     }
@@ -282,6 +278,7 @@ contract HelloDebot is Debot, Constants {
         Terminal.print(0, "You can here deploy new services.");
         Terminal.print(0, "1. Service payable with TON crystals");
         Terminal.print(0, "2. Service payable with a TIP3 token (NOT RELEASED YET)");
+        Terminal.print(0, "3. Service payable with a generic service (NOT RELEASED YET)");
         Terminal.input(tvm.functionId(setUserMainAction), "Action: ", false);
     }
 
