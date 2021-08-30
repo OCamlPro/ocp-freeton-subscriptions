@@ -132,7 +132,7 @@ contract Subscription is ISubscription, Constants, Buildable {
     function refillAccount(uint128 expected_gas) override external {
         require (expected_gas >= 0.01 ton, E_INVALID_AMOUNT);
         // 0.01 is enough for the rest of the execution
-        require (p.root_token == address(0), E_NOT_CALLABLE_IF_TIP3);
+        require (c_payment_plan.root_token == address(0), E_NOT_CALLABLE_IF_TIP3);
         tvm.accept();
 
         c_wallet.transfer{
@@ -145,7 +145,8 @@ contract Subscription is ISubscription, Constants, Buildable {
     // Continuation of refill.
     // If there has been locked funds so far, transfering it to the service provider
     // Otherwise, calling continuation `onOnRefillAccount`
-    function onRefillAccount(uint128 wallet_balance) external onlyFrom(address(c_wallet)){
+    function onRefillAccount(uint128 wallet_balance) external {
+        require(msg.sender == address(c_wallet), E_UNAUTHORIZED);
         tvm.accept();
         // Now using the 'expected_gas' from the refillAccount call.
         emit WalletBalance(wallet_balance);
@@ -169,7 +170,8 @@ contract Subscription is ISubscription, Constants, Buildable {
 
     // Continuation of `onRefillAccount`.
     // Updates the current balance & the timestamp of the subscription
-    function onOnRefillAccount(uint128 wallet_balance) public onlyFrom(address(c_wallet)){
+    function onOnRefillAccount(uint128 wallet_balance) public {
+        require(msg.sender == address(c_wallet), E_UNAUTHORIZED);
         m_wallet_balance = wallet_balance;
         if (now > subscribedUntil()) {
             // Subscription stopped at some point.
@@ -183,7 +185,8 @@ contract Subscription is ISubscription, Constants, Buildable {
     }
 
     // Cancels a subscription & refunds the subscriber of all the unlocked funds
-    function cancelSubscription() override external onlyFrom(s_subscriber){
+    function cancelSubscription() override external {
+        require(msg.sender == s_subscriber, E_UNAUTHORIZED);
         tvm.accept();
         int128 locked = -1 * int128(lockedFunds());
         c_wallet.transferTo{value:0, flag:128}(s_subscriber, locked);
@@ -217,8 +220,9 @@ contract Subscription is ISubscription, Constants, Buildable {
         }
     }
 
-    function onProviderClaim(uint128 balance) external onlyFrom(address(c_wallet)) {
+    function onProviderClaim(uint128 balance) external {
         
+        require(msg.sender == address(c_wallet), E_UNAUTHORIZED);
         m_wallet_balance = balance;
         
         // This condition is important if two calls of providerClaim

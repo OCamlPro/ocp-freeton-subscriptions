@@ -314,7 +314,7 @@ contract RootDebot is Debot, Constants {
     }
 
     function _selectWallet() internal {
-        AddressInput.get(/*tvm.functionId(setWallet)*/0,
+        AddressInput.get(tvm.functionId(setWallet),
             "Enter your wallet address"
         );
     }

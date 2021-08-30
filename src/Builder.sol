@@ -29,7 +29,8 @@ abstract contract Builder is Constants {
     }
 
     // Continuation of `init` ; initializes the code.
-    function updateCode(TvmCell c) external onlyFrom(address(ref)){
+    function updateCode(TvmCell c) external{
+        require(msg.sender == address(ref), E_UNAUTHORIZED);
         require(!code.hasValue(), E_ALREADY_INITIALIZED);
         code.set(c);
     }

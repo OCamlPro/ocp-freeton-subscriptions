@@ -19,10 +19,4 @@ contract Constants is IConstants {
     uint128 constant MAX_INT64 = uint128(2**64 - 1);
     uint128 constant MAX_INT128 = uint128(2**128 - 1);
 
-    // Checks the address of the sender
-    modifier onlyFrom(address a){
-        require(msg.sender == a, E_UNAUTHORIZED);
-        _;
-    }
-
 }
