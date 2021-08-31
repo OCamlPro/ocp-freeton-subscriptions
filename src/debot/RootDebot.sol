@@ -1,7 +1,8 @@
-pragma ton-solidity >=0.35.0;
+pragma ton-solidity ^0.44.0;
 pragma AbiHeader expire;
 pragma AbiHeader time;
 pragma AbiHeader pubkey;
+
 // import required DeBot interfaces and basic DeBot contract.
 import "lib/Debot.sol";
 import "lib/Terminal.sol";
@@ -10,6 +11,7 @@ import "lib/AmountInput.sol";
 import "lib/ConfirmInput.sol";
 import "../Constants.sol";
 import "../interfaces/IRecurringPaymentsRoot.sol";
+import "../interfaces/IMultisig.sol";
 
 contract RootDebot is Debot, Constants {
     string constant debot_name = "Root Subscription Manager Debot" ;
@@ -28,7 +30,7 @@ contract RootDebot is Debot, Constants {
     address g_subscription_manager_debot;
     address g_subscription_debot;
 
-    address g_contract;
+    address g_contract; // Recursive Payments Root contract
 
     address g_wallet;
     address g_root_token; // For TIP3
@@ -45,6 +47,12 @@ contract RootDebot is Debot, Constants {
         require(msg.pubkey() == tvm.pubkey(), 100);
         tvm.accept();
         g_subscription_manager_debot = debot;
+    }
+
+    function setPaymentRootContract(address addr) public {
+        require(msg.pubkey() == tvm.pubkey(), 100);
+        tvm.accept();
+        g_contract = addr;
     }
 
     /// @notice Returns Metadata about DeBot.
@@ -126,7 +134,7 @@ contract RootDebot is Debot, Constants {
 
     function setDuration(uint value) public {
         g_duration = uint64(value);
-        AmountInput.get(tvm.functionId(setDuration),
+        AmountInput.get(tvm.functionId(setAmount),
             "What is the subscription amount?",
             0,
             1,
@@ -151,27 +159,35 @@ contract RootDebot is Debot, Constants {
 
     function onCheck(bool value) public {
         if (value) {
-                IRecurringPaymentsRoot(g_contract).deployService{
+            TvmCell payload = 
+                tvm.encodeBody(
+                    IRecurringPaymentsRoot.deployService,
+                    g_wallet,
+                    PaymentPlan(
+                        g_amount,
+                        g_duration,
+                        g_root_token
+                    )
+                );
+            IMultisig(g_wallet).sendTransaction {
                 extMsg:true,
                 time:uint64(now),
                 expire:0,
-                sign:false,
-                callbackId:0, // TODO: Get Deployed Service address!
-                onErrorId:0,
+                sign:true,
+                callbackId:(tvm.functionId(this.start)), // TODO: Get Deployed Service address!
+                onErrorId:tvm.functionId(onErrorRestart),
                 abiVer:2
-            }(
-                g_wallet,
-                PaymentPlan(
-                    g_amount,
-                    g_duration,
-                    g_root_token
-                )
-            );
+            }(g_contract, 1 ton, true, 0, payload);
         } else {
             Terminal.print(0, "Going back to main menu.");
             start();
         }
     }
+
+  function onErrorRestart(uint32 sdkError, uint32 exitCode) public {
+    Terminal.print(0, format("Error: sdkError:{} exitCode:{}", sdkError, exitCode));
+    start();
+  }
 
 
 }

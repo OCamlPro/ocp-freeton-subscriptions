@@ -1,6 +1,7 @@
 pragma ton-solidity >=0.44.0;
 pragma AbiHeader time;
 pragma AbiHeader expire;
+pragma AbiHeader pubkey;
 
 import "interfaces/IRecurringPaymentsRoot.sol";
 
