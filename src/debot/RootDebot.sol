@@ -37,6 +37,8 @@ contract RootDebot is Debot, Constants {
     uint64 g_duration;
     uint128 g_amount;
 
+    bool g_valid;
+
     function setIcon(bytes icon) public {
         require(msg.pubkey() == tvm.pubkey(), 100);
         tvm.accept();
@@ -157,8 +159,32 @@ contract RootDebot is Debot, Constants {
         }
     }
 
+
+
     function onCheck(bool value) public {
         if (value) {
+        optional(uint256) nopubkey;
+        IMultisig(g_wallet).getCustodians {
+          abiVer: 2,
+          extMsg: true,
+          sign: false,
+          pubkey:nopubkey,
+          time: uint64(now),
+          expire: 0,
+          callbackId: tvm.functionId(okCheck),
+          onErrorId: tvm.functionId(onErrorRestart)
+        }();
+        } else {
+            Terminal.print(0, "Going back to main menu.");
+            start();
+        }
+    }
+
+    function okCheck(CustodianInfo[] custodians) public {
+        if (custodians.length != 1) {
+            Terminal.print(0, "Can subscribe only if 1 custodian on multisig");
+            start();
+        } else {
             TvmCell payload = 
                 tvm.encodeBody(
                     IRecurringPaymentsRoot.deployService,
@@ -174,13 +200,11 @@ contract RootDebot is Debot, Constants {
                 time:uint64(now),
                 expire:0,
                 sign:true,
-                callbackId:(tvm.functionId(this.start)), // TODO: Get Deployed Service address!
+                pubkey:(custodians[0].pubkey),
+                callbackId:(tvm.functionId(this.start)),
                 onErrorId:tvm.functionId(onErrorRestart),
                 abiVer:2
             }(g_contract, 1 ton, true, 0, payload);
-        } else {
-            Terminal.print(0, "Going back to main menu.");
-            start();
         }
     }
 

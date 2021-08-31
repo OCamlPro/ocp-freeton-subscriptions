@@ -10,4 +10,6 @@ interface IRecurringPaymentsRoot is IConstants {
     // Deploys a new subscription manager
     function deployService(address wallet, PaymentPlan pplan) external view;
 
+    function onAddService(address, address) external view;
+
 }
