@@ -9,11 +9,14 @@ import "interfaces/IRecurringPaymentsRoot.sol";
 // Service List Builder
 contract ServiceListBuilder is Builder {
 
+    uint64 m_deploy_cpt;
+
     constructor(address buildable) public {
         tvm.accept();
         ref = IBuildable(buildable);
         optional(TvmCell) o;
         code = o;
+        m_deploy_cpt = 0;
     }
 
     struct DeploymentMessage{
@@ -21,6 +24,7 @@ contract ServiceListBuilder is Builder {
         address provider;
         address service;
     }
+
 
     mapping(uint64 => DeploymentMessage) m_deploy_msgs; // Deployed messages, used when bounce
 
@@ -47,7 +51,9 @@ contract ServiceListBuilder is Builder {
                 s_service_provider: service_provider,
                 s_deployer: address(this)
             }
-        }(now);
+        }(m_deploy_cpt);
+
+        ++m_deploy_cpt;
 
         list.addService{value:0, flag:128}(service);
     
