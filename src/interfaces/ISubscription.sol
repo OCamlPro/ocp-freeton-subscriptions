@@ -26,10 +26,13 @@ interface ISubscription is IConstants, IBuildable {
 
     // Views
 
-    function getManager() external view responsible returns(address);
-    function getSubscriber() external view responsible returns(address);
-    function getWallet() external view responsible returns(address);
-    function getStart() external view responsible returns(uint128);
+    function getManager()      external view returns(address manager);
+    function getSubscriber()   external view returns(address subscriber);
+    function getWallet()       external view returns(address wallet);
+    function getStart()        external view returns(uint128 start);
+    function getBalance()      external view returns(uint128 balance);
+    function lockedFunds()     external view returns(uint128 locked);
+    function availableFunds()  external view returns(uint128 available);
     function subscribedUntil() external view returns(uint128 end);
 
     // Entry points

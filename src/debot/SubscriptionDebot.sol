@@ -132,8 +132,10 @@ contract SubscriptionDebot is Debot {
         Terminal.print(0, "Hello and welcome to your Subscription.");
         Terminal.print(0, "Please select an action.");
         Terminal.print(0, "1. When does my subscription ends?");
-        Terminal.print(0, "2. I want to refill my account.");
-        Terminal.print(0, "3. I want to cancel my subscription.");
+        Terminal.print(0, "2. How much funds left on my account?");
+        Terminal.print(0, "3. How much funds locked on my account?");
+        Terminal.print(0, "4. I want to refill my account.");
+        Terminal.print(0, "5. I want to cancel my subscription.");
         Terminal.input(tvm.functionId(setUserMainAction), "Action: ", false);
     }
 
@@ -141,8 +143,12 @@ contract SubscriptionDebot is Debot {
         if (value == "1"){
             _handleSubscriptionEnd();
         } else if (value == "2") {
-            _handleRefillAccount();
+            _handleBalance();
         } else if (value == "3") {
+            _handleLockedBalance();
+        } else if (value == "4") {
+            _handleRefillAccount();
+        } else if (value == "5") {
             _handleCancel();
         } else {
             Terminal.print(0, format("You have entered \"{}\", which is an invalid action.", value));
@@ -164,6 +170,41 @@ contract SubscriptionDebot is Debot {
 
     function onSuccessSubscriptionEnd(uint128 end) public{
         Terminal.print(0, format("Your subscription ends at \"{}\"",end));
+        mainMenu();
+    }
+
+    function _handleBalance() view internal {
+        ISubscription(g_contract).availableFunds{
+            extMsg:true,
+            time:uint64(now),
+            expire:0,
+            sign:false,
+            callbackId:tvm.functionId(onSuccessSubscriptionEnd),
+            onErrorId:tvm.functionId(onErrorRestart),
+            abiVer:2
+        }();
+    }
+
+    function onSuccessGetBalance(uint128 available) public {
+        Terminal.print(0, format("There are {} nanotons left on your account", available));
+        mainMenu();
+    }
+
+
+    function _handleLockedBalance() view internal {
+        ISubscription(g_contract).lockedFunds{
+            extMsg:true,
+            time:uint64(now),
+            expire:0,
+            sign:false,
+            callbackId:tvm.functionId(onSuccessGetLockedBalance),
+            onErrorId:tvm.functionId(onErrorRestart),
+            abiVer:2
+        }();
+    }
+
+    function onSuccessGetLockedBalance(uint128 locked) public {
+        Terminal.print(0, format("There are {} nanotons locked on your account", locked));
         mainMenu();
     }
 
@@ -189,10 +230,13 @@ contract SubscriptionDebot is Debot {
         mainMenu();
     }
 
-
-
     function onErrorRestart(uint32 sdkError, uint32 exitCode) public {
         Terminal.print(0, format("Error: sdkError:{} exitCode:{}", sdkError, exitCode));
+        mainMenu();
+    }
+
+    fallback() external {
+        Terminal.print(0, "Error! Going back to main menu");
         mainMenu();
     }
 

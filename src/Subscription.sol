@@ -43,39 +43,24 @@ contract Subscription is ISubscription, Constants, Buildable {
     }
 
     // Views
-    function getManager() override external view responsible returns(address){
-        require(msg.value >= 0.001 ton, E_INVALID_AMOUNT);
-        tvm.accept();
-        emit Manager(s_manager);
-        return s_manager;
+    function getManager() override external view returns(address manager){
+        manager = s_manager;
     }
 
-    function getSubscriber() override external view responsible returns(address){
-        require(msg.value >= 0.001 ton, E_INVALID_AMOUNT);
-        tvm.accept();
-        emit Subscriber(s_subscriber);
-        return s_subscriber;
+    function getSubscriber() override external view returns(address subscriber){
+        subscriber = s_subscriber;
     }
 
-    function getWallet() override external view responsible returns(address){
-        require(msg.value >= 0.001 ton, E_INVALID_AMOUNT);
-        tvm.accept();
-        emit Wallet(c_wallet);
-        return address(c_wallet);
+    function getWallet() override external view returns(address wallet){
+        wallet = address(c_wallet);
     }
 
-    function getStart() override external view responsible returns(uint128){
-        require(msg.value >= 0.001 ton, E_INVALID_AMOUNT);
-        tvm.accept();
-        emit Start(m_start);
-        return m_start;
+    function getStart() override external view returns(uint128 start){
+        start = m_start;
     }
 
-    function getBalance() external view responsible returns(uint128){
-        require(msg.value >= 0.001 ton, E_INVALID_AMOUNT);
-        tvm.accept();
-        emit WalletBalance(m_wallet_balance);
-        return m_wallet_balance;
+    function getBalance() override external view returns(uint128 balance){
+        balance = m_wallet_balance;
     }
 
     // A `tick` is defined as a subscription period.
@@ -109,17 +94,16 @@ contract Subscription is ISubscription, Constants, Buildable {
     }
 
     // Returns the locked funds, i.e. the funds the subscriber has lost access to.
-    function lockedFunds() public view responsible returns(uint128){
-        uint128 res = _numberOfTicksLocked() * c_payment_plan.amount;
-        return {value:0, flag:64} res;
+    function lockedFunds() override public view returns(uint128 locked){
+        locked = _numberOfTicksLocked() * c_payment_plan.amount;
+    }
+
+    function availableFunds() override public view returns(uint128 available){
+        available = m_wallet_balance - lockedFunds();
     }
 
     // Returns the end of the last period the user subscribed to
-    function subscribedUntil() override external view returns(uint128 end) {
-        end = pubSubscribedUntil();
-    }
-
-    function pubSubscribedUntil() public view returns(uint128 end) {
+    function subscribedUntil() override public view returns(uint128 end) {
         end = m_start + _numberOfTicksLocked() * c_payment_plan.period;
     }
 
@@ -174,7 +158,7 @@ contract Subscription is ISubscription, Constants, Buildable {
     function onOnRefillAccount(uint128 wallet_balance) public {
         require(msg.sender == address(c_wallet), E_UNAUTHORIZED);
         m_wallet_balance = wallet_balance;
-        if (now > pubSubscribedUntil()) {
+        if (now > subscribedUntil()) {
             // Subscription stopped at some point.
             // If there is now enough funds to start a new subscription,
             // we have to update m_start
@@ -235,4 +219,5 @@ contract Subscription is ISubscription, Constants, Buildable {
 
         s_service_provider.transfer(0,false,128);
     }
+
 }
