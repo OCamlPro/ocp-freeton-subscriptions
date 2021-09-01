@@ -14,6 +14,7 @@ contract Subscription is ISubscription, Constants, Buildable {
     address static s_manager; // The subscription manager
     address static s_service_provider; // The service provider
     address static s_subscriber; // The user
+    uint64 static s_id; // A unique ID
 
     PaymentPlan c_payment_plan; // The payment plan (constant)
     IWallet c_wallet; // The wallet associated to the subscription (constant)
@@ -31,7 +32,6 @@ contract Subscription is ISubscription, Constants, Buildable {
     event Wallet(address);
     event Start(uint128);
     event LockedFunds(uint128);
-    event SubscribedUntil(uint128);
     event WalletBalance(uint128);
 
     constructor(PaymentPlan p, address wallet) public{
@@ -115,11 +115,12 @@ contract Subscription is ISubscription, Constants, Buildable {
     }
 
     // Returns the end of the last period the user subscribed to
-    function subscribedUntil() override public view responsible returns(uint128 end) {
+    function subscribedUntil() override external view returns(uint128 end) {
+        end = pubSubscribedUntil();
+    }
+
+    function pubSubscribedUntil() public view returns(uint128 end) {
         end = m_start + _numberOfTicksLocked() * c_payment_plan.period;
-        emit Start(m_start);
-        emit SubscribedUntil(end);
-        return {value:0, flag:64} end;
     }
 
 
@@ -173,7 +174,7 @@ contract Subscription is ISubscription, Constants, Buildable {
     function onOnRefillAccount(uint128 wallet_balance) public {
         require(msg.sender == address(c_wallet), E_UNAUTHORIZED);
         m_wallet_balance = wallet_balance;
-        if (now > subscribedUntil()) {
+        if (now > pubSubscribedUntil()) {
             // Subscription stopped at some point.
             // If there is now enough funds to start a new subscription,
             // we have to update m_start

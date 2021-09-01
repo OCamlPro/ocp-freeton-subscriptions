@@ -16,6 +16,7 @@ import "lib/Transferable.sol";
 
 import "../interfaces/ISubscriptionManager.sol";
 import "../interfaces/ISubscription.sol";
+import "../interfaces/IMultisig.sol";
 import "SubscriptionDebot.sol";
 
 // Interface of the contract with which to interact
@@ -59,7 +60,8 @@ abstract contract Utility {
     bytes m_icon;
 
     address g_contract;
-    address g_subscriber;
+    address g_user;
+    uint256 g_user_pubkey;
     address g_subscription_debot;
 
     function getRequiredInterfaces() public view override
@@ -103,22 +105,68 @@ abstract contract Utility {
         icon = m_icon;
     }
 
-    /// @notice Entry point function for DeBot.
+    
     function start() public override {
-        AddressInput.get(tvm.functionId(onStart),
-        "Which service do you want to work with?");
+        AddressInput.get(tvm.functionId(setWallet),
+            "Enter your wallet address"
+        );
     }
 
-    function onStart(address subman) public {
-        g_contract = subman;
+    function _getCustodians(uint32 callback, address multisig) internal pure {
+        optional(uint256) nopubkey;
+        IMultisig(multisig).getCustodians {
+            abiVer: 2,
+            extMsg: true,
+            sign: false,
+            pubkey:nopubkey,
+            time: uint64(now),
+            expire: 0,
+            callbackId: callback,
+            onErrorId: tvm.functionId(onErrorRestart)
+        }();
+    }
+
+    function setWallet(address value) public {
+        g_user = value;
+        _getCustodians(tvm.functionId(loadPubkey), value);
+    }
+
+    function loadPubkey(CustodianInfo[] custodians) public {
+        if (custodians.length != 1) {
+            Terminal.print(0, "Can manage services only if 1 custodian on multisig");
+            start();
+        } else {
+            g_user_pubkey = custodians[0].pubkey;
+            _selectManager();
+        }
+    }
+ 
+    function _selectManager() internal {
+        AddressInput.get(tvm.functionId(setManager),
+            "Enter the address of the service you want to manage"
+        );
+    }
+
+    function setManager(address value) public {
+        g_contract = value;
         mainMenu();
-    } 
+    }
+
+    function onDebotStart(address submanager, address user, uint256 pubkey) public {
+        g_contract = submanager;
+        g_user = user;
+        g_user_pubkey = pubkey;
+        mainMenu();
+    }
+
 
     function mainMenu () public {
         Terminal.print(0, "Hello and welcome to the Service Manager.");
         Terminal.print(0, "Please select an action.");
         Terminal.print(0, "1. Subscribe");
         Terminal.print(0, "2. Claim the subscription fees (owner only)");
+        Terminal.print(0, "9. Change Service Manager");
+        Terminal.print(0, "0. Change Account");
         Terminal.input(tvm.functionId(setUserMainAction), "Action: ", false);
     }
 
@@ -127,31 +175,35 @@ abstract contract Utility {
             _handleSubscription();
         } else if (value == "2") {
             _handleClaim();
+        } else if (value == "9") {
+            _selectManager();
+        } else if (value == "0") {
+            start();
         } else {
             Terminal.print(0, format("You have entered \"{}\", which is an invalid action.", value));
             mainMenu();
         }
     }
 
-    function _handleSubscription() internal {
-        AddressInput.get(
-            tvm.functionId(onSubscriptionAddress),
-            "Enter your address, it will be your subscription identifier."
-        );
-    }
+    function _handleSubscription() internal view {
 
-    function onSubscriptionAddress(address value) public {
-        g_subscriber = value;
-        ISubscriptionManager(g_contract).subscribe{
+        TvmCell payload = 
+            tvm.encodeBody(
+                ISubscriptionManager.subscribe,
+                g_user
+            );
+        IMultisig(g_user).sendTransaction {
             extMsg:true,
             time:uint64(now),
             expire:0,
-            sign:false,
-            callbackId:tvm.functionId(this.onSubscription),
-            onErrorId:0,
+            sign:true,
+            pubkey:(g_user_pubkey),
+            callbackId:(tvm.functionId(onSubscription)),
+            onErrorId:tvm.functionId(onErrorRestart),
             abiVer:2
-        }(value);
+        }(g_contract, 1 ton, true, 0, payload);
     }
+
 
     function onSubscription() public {
         Terminal.print(0, "You have successfully been subscribed!");
@@ -163,15 +215,44 @@ abstract contract Utility {
             callbackId:tvm.functionId(onSubscriptionSuccess),
             onErrorId:0,
             abiVer:2
-        }(g_subscriber);
+        }(g_user);
     }
 
-    function onSubscriptionSuccess(address value) public view {
-        SubscriptionDebot(g_subscription_debot).onStart(value);
+    function onSubscriptionSuccess(address value) public {
+        Terminal.print(0, format("Subscription address: {}", value));
+        SubscriptionDebot(g_subscription_debot).onDebotStart(
+            value, 
+            g_user, 
+            g_user_pubkey
+        );
     }
 
     function _handleClaim() internal view {
-        ISubscriptionManager(g_contract).claimSubscriptions();
+
+        TvmCell payload = 
+            tvm.encodeBody(
+                ISubscriptionManager.claimSubscriptions
+            );
+        IMultisig(g_user).sendTransaction {
+            extMsg:true,
+            time:uint64(now),
+            expire:0,
+            sign:true,
+            pubkey:(g_user_pubkey),
+            callbackId:(tvm.functionId(onClaimSuccess)),
+            onErrorId:tvm.functionId(onErrorRestart),
+            abiVer:2
+        }(g_contract, 1 ton, true, 0, payload);
+    }
+
+    function onClaimSuccess() public {
+        Terminal.print(0, format("Claim success!"));
+        mainMenu();
+    }
+
+    function onErrorRestart(uint32 sdkError, uint32 exitCode) public {
+        Terminal.print(0, format("Error: sdkError:{} exitCode:{}", sdkError, exitCode));
+        mainMenu();
     }
 
 }

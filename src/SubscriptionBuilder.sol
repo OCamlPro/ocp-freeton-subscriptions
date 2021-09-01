@@ -30,7 +30,8 @@ contract SubscriptionBuilder is Builder {
             varInit:{
                 s_manager: manager,
                 s_service_provider: service_provider,
-                s_subscriber: subscriber
+                s_subscriber: subscriber,
+                s_id:now
             }
         }(pplan, wallet);
         return {value:0, flag:128} (subscriber, address(ctr), wallet);

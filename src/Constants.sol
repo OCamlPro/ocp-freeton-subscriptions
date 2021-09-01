@@ -13,6 +13,7 @@ contract Constants is IConstants {
     uint8 constant E_UNINITIALIZED = 103;
     uint8 constant E_INVALID_AMOUNT = 104;
     uint8 constant E_NOT_CALLABLE_IF_TIP3 = 105;
+    uint8 constant E_ALREADY_SUBSCRIBED = 106;
 
     uint8 constant E_INVARIANT_BROKEN = 201;
 

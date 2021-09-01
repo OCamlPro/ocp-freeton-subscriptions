@@ -68,6 +68,7 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
 
     // Starts a new subscription.
     function subscribe(address subscriber) override external{
+        require (!m_subscriptions.exists(subscriber), E_ALREADY_SUBSCRIBED);
         tvm.accept();
         c_wal_builder.deploy{
             value:0, 

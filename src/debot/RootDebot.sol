@@ -95,7 +95,6 @@ contract RootDebot is Debot, Constants {
         return [ Terminal.ID ];
     }
 
-    /// @notice Entry point function for DeBot.
     function start() public override {
         AddressInput.get(tvm.functionId(setWallet),
             "Enter your wallet address"
@@ -313,8 +312,10 @@ contract RootDebot is Debot, Constants {
     }
 
     function selectService(uint value) public view {
-        SubscriptionManagerDebot(g_subscription_manager_debot).onStart(
-            g_service_list[value]
+        SubscriptionManagerDebot(g_subscription_manager_debot).onDebotStart(
+            g_service_list[value],
+            g_wallet,
+            g_wallet_pubkey
         );
     }
 
