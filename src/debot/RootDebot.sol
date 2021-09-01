@@ -334,7 +334,8 @@ contract RootDebot is Debot, Constants {
         SubscriptionManagerDebot(g_subscription_manager_debot).onDebotStart(
             g_service_list[value].addr,
             g_wallet,
-            g_wallet_pubkey
+            g_wallet_pubkey,
+            g_service_list[value].descr
         );
     }
 

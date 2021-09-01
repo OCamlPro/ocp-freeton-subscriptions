@@ -58,6 +58,7 @@ contract SubscriptionManagerDebot is Debot, Constants {
     uint256 g_user_pubkey;
     address g_subscription_debot;
     address g_root_debot;
+    string g_descr;
 
     function getRequiredInterfaces() public view override
         returns (uint256[] interfaces) {
@@ -142,27 +143,41 @@ contract SubscriptionManagerDebot is Debot, Constants {
  
     function _selectManager() internal {
         AddressInput.get(tvm.functionId(setManager),
-            "Enter the address of the service you want to manage"
+            "Enter the address of the service"
         );
     }
 
     function setManager(address value) public {
         g_contract = value;
+        ISubscriptionManager(value).getDescription{
+            extMsg:true,
+            time:uint64(now),
+            expire:0,
+            sign:false,
+            callbackId:tvm.functionId(onGetDescription),
+            onErrorId:0,
+            abiVer:2
+        }();
+    }
+
+    function onGetDescription(string description) public {
+        g_descr = description;
         mainMenu();
     }
 
-    function onDebotStart(address submanager, address user, uint256 pubkey) public {
+    function onDebotStart(address submanager, address user, uint256 pubkey, string descr) public {
         g_contract = submanager;
         g_user = user;
         g_user_pubkey = pubkey;
+        g_descr = descr;
         mainMenu();
     }
 
 
     function mainMenu () public {
-        Terminal.print(0, "Hello and welcome to the Service Manager.");
+        Terminal.print(0, format("Hello and welcome to the \"{}\" Service!", g_descr));
         Terminal.print(0, "Please select an action.");
-        Terminal.print(0, "1. Subscribe");
+        Terminal.print(0, "1. Subscribe/Manage my subscription");
         Terminal.print(0, "2. Claim the subscription fees (owner only)");
         Terminal.print(0, "9. Change Service Manager");
         Terminal.print(0, "0. Back");
@@ -204,7 +219,7 @@ contract SubscriptionManagerDebot is Debot, Constants {
     }
 
     function _getSubscription() internal {
-        ISubscriptionManager(g_contract).getSubscription{
+        ISubscriptionManager(g_contract).getSubscription {
             extMsg:true,
             time:uint64(now),
             expire:0,
