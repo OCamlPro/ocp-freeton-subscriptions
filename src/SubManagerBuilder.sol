@@ -8,8 +8,6 @@ import "SubscriptionManager.sol";
 // The builder of Subscriptions Managers.
 contract SubManagerBuilder is Builder {
 
-    uint64 m_id; // A counter for IDs of subscription manager builders
-
     address c_sub_builder; // The Subscription Builder address
     address c_wal_builder; // The Wallet Builder address
 
@@ -18,7 +16,6 @@ contract SubManagerBuilder is Builder {
         ref = IBuildable(buildable);
         optional(TvmCell) o;
         code = o;
-        m_id = 0;
         c_sub_builder = sub_builder;
         c_wal_builder = wal_builder;
     }
@@ -31,12 +28,11 @@ contract SubManagerBuilder is Builder {
             value:(msg.value / 2),
             code: code.get(),
             varInit:{
-                s_id: m_id,
+                s_id: now,
                 s_service_provider: service_provider,
                 s_wallet: wallet 
             }
         }(c_sub_builder, c_wal_builder, pplan);
-        m_id ++;
         return {value:0,flag:128} (wallet, address(ctr), service_provider);
     }
 
