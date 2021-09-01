@@ -51,7 +51,7 @@ contract Wallet is Constants, Buildable {
 
     // Accepts funds & returns the balance of the contract
     function transfer() external pure responsible returns(uint128){
-        return address(this).balance;
+        return {value: 0.01 ton} address(this).balance - 0.01 ton;
     }
 
 }

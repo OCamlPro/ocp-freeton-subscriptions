@@ -131,7 +131,7 @@ contract SubscriptionDebot is Debot, Constants {
     }
 
     function mainMenu() public {
-        Terminal.print(0, "Hello and welcome to your Subscription.");
+        Terminal.print(0, format("Hello and welcome to your Subscription.({})", g_contract));
         Terminal.print(0, "Please select an action.");
         Terminal.print(0, "1. When does my subscription ends?");
         Terminal.print(0, "2. How much funds left on my account?");
@@ -214,7 +214,7 @@ contract SubscriptionDebot is Debot, Constants {
         AmountInput.get(tvm.functionId(setRefill),
             "How much funds (in nanotons) do you want to deposit on your account?",
             0,
-            0.01 ton,
+            0.015 ton,
             MAX_INT128
         );
     }
@@ -223,7 +223,7 @@ contract SubscriptionDebot is Debot, Constants {
         TvmCell payload = 
             tvm.encodeBody(
                 ISubscription.refillAccount,
-                0.01 ton
+                0.015 ton
             );
         IMultisig(g_user).sendTransaction {
             extMsg:true,
@@ -243,15 +243,20 @@ contract SubscriptionDebot is Debot, Constants {
     }
 
     function _handleCancel() internal view {
-        ISubscription(g_contract).cancelSubscription{
+        TvmCell payload = 
+            tvm.encodeBody(
+                ISubscription.cancelSubscription
+            );
+        IMultisig(g_user).sendTransaction {
             extMsg:true,
             time:uint64(now),
             expire:0,
             sign:true,
-            callbackId:tvm.functionId(this.onSuccessCancel),
-            onErrorId:0,
+            pubkey:(g_user_pubkey),
+            callbackId:(tvm.functionId(onRefill)),
+            onErrorId:tvm.functionId(onErrorRestart),
             abiVer:2
-        }();
+        }(g_contract, 0.3 ton, true, 0, payload);
     }
 
     function onSuccessCancel() external {

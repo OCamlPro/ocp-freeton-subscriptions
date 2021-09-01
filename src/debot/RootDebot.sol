@@ -135,7 +135,7 @@ contract RootDebot is Debot, Constants {
         g_root_token = address(0);
         g_duration = 0;
         g_amount = 0;
-        Terminal.print(0, "Hello and welcome to the Service Manager.");
+        Terminal.print(0, format("Hello and welcome to the Service Manager ({}).",g_contract));
         Terminal.print(0, "You can here deploy new services.");
         Terminal.print(0, "1. Service payable with TON crystals");
         Terminal.print(0, "2. Service payable with a TIP3 token (NOT RELEASED YET)");
@@ -164,7 +164,7 @@ contract RootDebot is Debot, Constants {
             printServices();
         } else if (value == "9") {
             Terminal.print(0, "Listing services");
-            _listServices();
+            listServices();
         } else if (value == "0") {
             start();
         } else {

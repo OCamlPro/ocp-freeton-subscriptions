@@ -115,7 +115,9 @@ contract Subscription is ISubscription, Constants, Buildable {
     // will be used as the gas for the rest of the execution and refund 
     // to the user.
     function refillAccount(uint128 expected_gas) override external {
-        require (expected_gas >= 0.01 ton, E_INVALID_AMOUNT);
+        require (
+            expected_gas >= 0.015 ton && 
+            msg.value - expected_gas >= 0.01 ton , E_INVALID_AMOUNT);
         // 0.01 is enough for the rest of the execution
         require (c_payment_plan.root_token == address(0), E_NOT_CALLABLE_IF_TIP3);
         tvm.accept();
@@ -172,9 +174,16 @@ contract Subscription is ISubscription, Constants, Buildable {
     // Cancels a subscription & refunds the subscriber of all the unlocked funds
     function cancelSubscription() override external {
         require(msg.sender == s_subscriber, E_UNAUTHORIZED);
+        require(msg.value >= 0.03 ton, E_INVALID_AMOUNT);
         tvm.accept();
         int128 locked = -1 * int128(lockedFunds());
-        c_wallet.transferTo{value:0, flag:128}(s_subscriber, locked);
+        c_wallet.transferTo{value:0.02 ton}(s_subscriber, locked);
+        c_wallet.balance{value:0, flag:128, callback:updateBalance}();
+    }
+
+    function updateBalance(uint128 balance) public {
+        require(msg.sender == address(c_wallet), E_UNAUTHORIZED);
+        m_wallet_balance = balance;
     }
 
     // Transfers the locked funds to the service provider
