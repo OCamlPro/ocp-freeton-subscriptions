@@ -32,7 +32,7 @@ contract SubManagerBuilder is Builder {
             code: code.get(),
             varInit:{
                 s_id: m_id,
-                s_service_provider: msg.sender,
+                s_service_provider: service_provider,
                 s_wallet: wallet 
             }
         }(c_sub_builder, c_wal_builder, pplan);
