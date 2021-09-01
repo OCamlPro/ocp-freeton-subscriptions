@@ -143,7 +143,7 @@ contract SubscriptionDebot is Debot, Constants {
     function mainMenu() public {
         Terminal.print(0, format("Hello and welcome to your Subscription.({})", g_contract));
         Terminal.print(0, "Please select an action.");
-        Terminal.print(0, "1. When does my subscription ends?");
+        Terminal.print(0, "1. When does my subscription end?");
         Terminal.print(0, "2. How much funds left on my account?");
         Terminal.print(0, "3. How much funds locked on my account?");
         Terminal.print(0, "4. I want to refill my account.");
@@ -184,7 +184,12 @@ contract SubscriptionDebot is Debot, Constants {
     }
 
     function onSuccessSubscriptionEnd(uint128 end) public{
-        Terminal.print(0, format("Your subscription ends in {} seconds",end - now));
+        int256 duration = int256(end) - int256(now);
+        if (duration < 0){
+            Terminal.print(0,format("Your subscription expired!"));
+        } else {
+            Terminal.print(0, format("Your subscription ends in {} seconds", duration));
+        }
         mainMenu();
     }
 
