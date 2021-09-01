@@ -248,15 +248,13 @@ contract RootDebot is Debot, Constants {
             expire:0,
             sign:true,
             pubkey:(g_wallet_pubkey),
-            callbackId:(tvm.functionId(onRestart)),
+            callbackId:(tvm.functionId(listServices)),
             onErrorId:tvm.functionId(onErrorRestart),
             abiVer:2
-        }(g_contract, 1 ton, true, 0, payload);   
+        }(g_contract, 0.1 ton, true, 0, payload);   
     }
 
-    function _listServices() internal {
-        Terminal.print(0, "_listServices");
-
+    function listServices() public {
         optional(uint256) nopubkey;
         IServiceListBuilder(g_service_list_manager).getServicesList {
             abiVer: 2,
@@ -272,7 +270,6 @@ contract RootDebot is Debot, Constants {
     }
 
     function onGetServicesList(address list) public {
-        Terminal.print(0, "onGetServicesList");
         optional(uint256) nopubkey;
         IServiceList(list).getServices {
             extMsg:true,
