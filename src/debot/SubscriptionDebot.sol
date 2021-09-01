@@ -18,6 +18,8 @@ import "../interfaces/ISubscription.sol";
 import "../interfaces/IMultisig.sol";
 import "../Constants.sol";
 
+import "IMainMenu.sol";
+
 contract SubscriptionDebot is Debot, Constants {
     
     string constant debot_name = "Subscription Debot" ;
@@ -37,10 +39,18 @@ contract SubscriptionDebot is Debot, Constants {
     uint256 g_user_pubkey;
     uint128 g_refill;
 
+    address g_manager_debot;
+
     function setIcon(bytes icon) public {
         require(msg.pubkey() == tvm.pubkey(), 100);
         tvm.accept();
         m_icon = icon;
+    }
+
+    function setManagerDebot(address debot) public {
+        require(msg.pubkey() == tvm.pubkey(), 100);
+        tvm.accept();
+        g_manager_debot = debot;
     }
 
     /// @notice Returns Metadata about DeBot.
@@ -137,7 +147,8 @@ contract SubscriptionDebot is Debot, Constants {
         Terminal.print(0, "2. How much funds left on my account?");
         Terminal.print(0, "3. How much funds locked on my account?");
         Terminal.print(0, "4. I want to refill my account.");
-        Terminal.print(0, "5. I want to cancel my subscription.");
+        Terminal.print(0, "5. I want to cancel/pause my subscription.");
+        Terminal.print(0, "0. Back to Manager");
         Terminal.input(tvm.functionId(setUserMainAction), "Action: ", false);
     }
 
@@ -152,6 +163,8 @@ contract SubscriptionDebot is Debot, Constants {
             _handleRefillAccount();
         } else if (value == "5") {
             _handleCancel();
+        } else if (value == "0") {
+            IMainMenu(g_manager_debot).mainMenu();
         } else {
             Terminal.print(0, format("You have entered \"{}\", which is an invalid action.", value));
             mainMenu();
@@ -171,7 +184,7 @@ contract SubscriptionDebot is Debot, Constants {
     }
 
     function onSuccessSubscriptionEnd(uint128 end) public{
-        Terminal.print(0, format("Your subscription ends at \"{}\"",end));
+        Terminal.print(0, format("Your subscription ends in {} seconds",end - now));
         mainMenu();
     }
 
@@ -267,6 +280,10 @@ contract SubscriptionDebot is Debot, Constants {
     function onErrorRestart(uint32 sdkError, uint32 exitCode) public {
         Terminal.print(0, format("Error: sdkError:{} exitCode:{}", sdkError, exitCode));
         mainMenu();
+    }
+
+    function _handleBack() internal {
+        
     }
 
     fallback() external {

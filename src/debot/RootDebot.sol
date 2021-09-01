@@ -15,6 +15,7 @@ import "../interfaces/IMultisig.sol";
 import "../interfaces/IServiceList.sol";
 import "../interfaces/IServiceListBuilder.sol";
 import "SubscriptionManagerDebot.sol";
+import "IMainMenu.sol";
 
 contract RootDebot is Debot, Constants {
 
@@ -126,12 +127,12 @@ contract RootDebot is Debot, Constants {
             start();
         } else {
             g_wallet_pubkey = custodians[0].pubkey;
-            _onStart();
+            mainMenu();
         }
 
     }
 
-    function _onStart() internal {
+    function mainMenu() public {
         g_root_token = address(0);
         g_duration = 0;
         g_amount = 0;
@@ -155,7 +156,7 @@ contract RootDebot is Debot, Constants {
             _selectRootContract();
         } else if (value == "3") {
             Terminal.print(0, "Generic services not supported yet");
-            _onStart();
+            mainMenu();
         } else if (value == "7") {
             Terminal.print(0, "Which service do you want to manage?");
             printServicesSelection();
@@ -169,7 +170,7 @@ contract RootDebot is Debot, Constants {
             start();
         } else {
             Terminal.print(0, format("You have entered \"{}\", which is an invalid action.", value));
-            _onStart();
+            mainMenu();
         }
     }
 
@@ -227,7 +228,7 @@ contract RootDebot is Debot, Constants {
             okCheck();
         } else {
             Terminal.print(0, "Going back to main menu.");
-            _onStart();
+            mainMenu();
         }
     }
 
@@ -292,7 +293,7 @@ contract RootDebot is Debot, Constants {
         for(address service : g_service_list){
             Terminal.print(0, format("Service: {}", service));            
         }
-        _onStart();
+        mainMenu();
     }
 
     function printServicesSelection() public {
@@ -318,12 +319,12 @@ contract RootDebot is Debot, Constants {
 
     function onRestart() public {
         Terminal.print(0, "Success!");
-        _onStart();
+        mainMenu();
     }
 
     function onErrorRestart(uint32 sdkError, uint32 exitCode) public {
         Terminal.print(0, format("Error: sdkError:{} exitCode:{}", sdkError, exitCode));
-        _onStart();
+        mainMenu();
     }
 
 }

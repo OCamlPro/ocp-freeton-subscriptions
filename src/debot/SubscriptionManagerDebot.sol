@@ -57,6 +57,7 @@ contract SubscriptionManagerDebot is Debot, Constants {
     address g_user;
     uint256 g_user_pubkey;
     address g_subscription_debot;
+    address g_root_debot;
 
     function getRequiredInterfaces() public view override
         returns (uint256[] interfaces) {
@@ -78,6 +79,12 @@ contract SubscriptionManagerDebot is Debot, Constants {
         require(msg.pubkey() == tvm.pubkey(), 100);
         tvm.accept();
         g_subscription_debot = debot;
+    }
+
+    function setRootDebot(address debot) public {
+        require(msg.pubkey() == tvm.pubkey(), 100);
+        tvm.accept();
+        g_root_debot = debot;
     }
 
     /// @notice Returns Metadata about DeBot.
@@ -158,7 +165,7 @@ contract SubscriptionManagerDebot is Debot, Constants {
         Terminal.print(0, "1. Subscribe");
         Terminal.print(0, "2. Claim the subscription fees (owner only)");
         Terminal.print(0, "9. Change Service Manager");
-        Terminal.print(0, "0. Change Account");
+        Terminal.print(0, "0. Back");
         Terminal.input(tvm.functionId(setUserMainAction), "Action: ", false);
     }
 
@@ -170,7 +177,7 @@ contract SubscriptionManagerDebot is Debot, Constants {
         } else if (value == "9") {
             _selectManager();
         } else if (value == "0") {
-            start();
+            IMainMenu(g_root_debot).mainMenu();
         } else {
             Terminal.print(0, format("You have entered \"{}\", which is an invalid action.", value));
             mainMenu();
