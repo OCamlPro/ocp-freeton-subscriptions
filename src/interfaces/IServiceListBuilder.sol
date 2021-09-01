@@ -2,9 +2,9 @@ pragma ton-solidity >=0.44.0;
 pragma AbiHeader time;
 pragma AbiHeader expire;
 
-// The Root contract, allowing to deploy services
 interface IServiceListBuilder {
 
+    // Returns the address of the service list
     function getServicesList(address provider) external view returns(address list);
 
 }

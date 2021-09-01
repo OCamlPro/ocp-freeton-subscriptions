@@ -12,18 +12,6 @@ import "IBuildable.sol";
 // contract is built or when it calls the 'start' method.
 interface ISubscription is IConstants, IBuildable {
 
-    // address static s_manager;
-    
-    // address static s_subscriber;
-    
-    // IWallet static s_wallet;
-
-    // Payment m_subscription;
-
-    // uint128 m_until;
-
-    // bool m_paused;
-
     // Views
 
     function getManager()      external view returns(address manager);

@@ -4,8 +4,6 @@ pragma AbiHeader expire;
 
 interface IWallet {
 
-    // address static s_subscribtion;
-
     function init(address) external;
     // Initializes a wallet with the address of the subscription.
 

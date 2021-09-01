@@ -9,15 +9,6 @@ import "IConstants.sol";
 // - The subscription contracts (ISubscription)
 // - The PaymentPlan contracts (IPaymentPlans)
 interface ISubscriptionManager is IConstants {
-
-    // address static s_owner; 
-    // Owner of the manager
-
-    // address static s_wallet;
-    // The wallet of the manager
-
-    // address[] m_subscriptions;
-    // Subscriptions (TODO: remove)
     
     // Views
     
@@ -40,15 +31,4 @@ interface ISubscriptionManager is IConstants {
     function claimSubscriptions() external;
     // Starts a new subscription.
 
-    // function pause() external; 
-    // Pauses the subscription of the subscriber
-    // Can only be called by the subscriber
-    
-    // function resume() external;
-    // Resumes a paused the subscription 
-    // Can only be called by the subscriber
-
-    // function cancel() external;
-    // Cancels the current subscription 
-    // Can only be called by the subscriber
 }

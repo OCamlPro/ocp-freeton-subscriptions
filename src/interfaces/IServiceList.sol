@@ -4,9 +4,10 @@ pragma AbiHeader expire;
 
 import "IConstants.sol";
 
-// The Root contract, allowing to deploy services
+// The Service List, saving the services of a given provider
 interface IServiceList is IConstants {
 
+    // Returns the information of the services deployed by a provider
     function getServices() external view returns(ServiceInfo[] services);
 
 }

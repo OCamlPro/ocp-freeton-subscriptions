@@ -8,7 +8,7 @@ import "Constants.sol";
 import "SubscriptionBuilder.sol";
 import "WalletBuilder.sol";
 
-// Subscription Managers are the services from which you can subscribe.
+// Subscription Managers are the Services from which you can subscribe.
 contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
 
     uint64 static s_id;
@@ -39,6 +39,7 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
     // Subscriptions
     // This should not be in the contract, as it is only useful for
     // claiming all due subscriptions, which can be done outside the blockchain
+    // TODO: decentralized mapping
     
     constructor(address sub_builder_address, address wal_builder_address, PaymentPlan pplan) public {
         tvm.accept();
