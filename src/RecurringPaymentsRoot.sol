@@ -41,21 +41,22 @@ contract RecurringPaymentsRoot is Constants, IRecurringPaymentsRoot {
     }
 
     // Deploys a new subscription manager
-    function deployService(address wallet, PaymentPlan pplan) external view override {
-        tvm.accept(); 
-        // Not necessary because the function does not cost enough
-        // gas to fail without tvm.accept();
-
+    function deployService(address wallet, PaymentPlan pplan, string description) external view override {
+        tvm.accept();
         c_sm_builder.deploy{
             value:0, 
             flag:128, 
             callback:this.onDeployService
-        }(wallet, pplan, msg.sender);
+        }(wallet, pplan, msg.sender, description);
     }
 
     // Continuation of `deployService` : emits the deployed service and refunds the
     // wallet owner
-    function onDeployService(address /* wallet */, address service, address provider) external view {
+    function onDeployService(
+        address /* wallet */, 
+        address service, 
+        address provider, 
+        string descr ) external view {
         require(msg.sender == address(c_sm_builder), E_UNAUTHORIZED);
         emit ServiceDeployed(service);
 
@@ -63,7 +64,7 @@ contract RecurringPaymentsRoot is Constants, IRecurringPaymentsRoot {
         // A service list is defined by the provider address & the root contract
         // If it already exists, it will add one.
 
-        c_sl_builder.deploy{value:0,flag:128}(provider,service);
+        c_sl_builder.deploy{value:0,flag:128}(provider,service, descr);
     }
 
     event ServiceAdded(address service_provider, address service);

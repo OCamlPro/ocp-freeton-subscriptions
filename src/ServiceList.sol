@@ -16,21 +16,21 @@ contract ServiceList is Constants, Buildable, IServiceList {
     address static s_root;
     address static s_deployer;
 
-    address[] m_services;
+    ServiceInfo[] m_services;
     
     constructor(uint64) public {
         tvm.accept();
-        address[] serv;
+        ServiceInfo[] serv;
         m_services = serv;
     }
 
-    function addService(address service) public {
+    function addService(address service, string descr) public {
         require (msg.sender == s_deployer, E_UNAUTHORIZED);
-        m_services.push(service);
+        m_services.push(ServiceInfo(service,descr));
         IRecurringPaymentsRoot(s_root).onAddService{value:0, flag:128}(s_service_provider,service);
     }
 
-    function getServices() external view override returns(address[] services){
+    function getServices() external view override returns(ServiceInfo[] services){
         return m_services;
     }
 }

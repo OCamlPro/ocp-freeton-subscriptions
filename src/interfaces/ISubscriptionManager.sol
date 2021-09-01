@@ -30,6 +30,9 @@ interface ISubscriptionManager is IConstants {
     function getSubscription(address) external view returns(address value);
     // Return subscriptions
 
+    function getDescription() external view returns(string description);
+    // Returns the description of the service
+
     // Entry points
 
     function subscribe(address) external; 

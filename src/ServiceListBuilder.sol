@@ -25,6 +25,7 @@ contract ServiceListBuilder is Builder, IServiceListBuilder {
     struct DeploymentMessage{
         address provider;
         address service;
+        string descr;
     }
 
 
@@ -44,10 +45,10 @@ contract ServiceListBuilder is Builder, IServiceListBuilder {
     }
 
     // Deploys a list of services (must be called by root)
-    function deploy(address service_provider, address service) external {
+    function deploy(address service_provider, address service, string descr) external {
         require (code.hasValue(), E_UNINITIALIZED);
         
-        m_deploy_msgs.add(now, DeploymentMessage(service_provider, service));
+        m_deploy_msgs.add(now, DeploymentMessage(service_provider, service, descr));
 
         ServiceList list = new ServiceList {
             value:msg.value/3,
@@ -62,7 +63,7 @@ contract ServiceListBuilder is Builder, IServiceListBuilder {
 
         ++m_deploy_cpt;
 
-        list.addService{value:0, flag:128}(service);
+        list.addService{value:0, flag:128}(service, descr);
     
     }
 
@@ -104,7 +105,7 @@ contract ServiceListBuilder is Builder, IServiceListBuilder {
                     }    
                 });
             address list = address(tvm.hash(stateInit));
-            ServiceList(list).addService{value:0, flag:128}(m.service);
+            ServiceList(list).addService{value:0, flag:128}(m.service, m.descr);
 
             delete m_deploy_msgs[timestamp];
         } else if (funId == tvm.functionId(ServiceList)) {

@@ -8,7 +8,7 @@ import "IConstants.sol";
 interface IRecurringPaymentsRoot is IConstants {
     
     // Deploys a new subscription manager
-    function deployService(address wallet, PaymentPlan pplan) external view;
+    function deployService(address wallet, PaymentPlan pplan, string description) external view;
 
     function onAddService(address, address) external view;
 

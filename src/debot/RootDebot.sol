@@ -46,10 +46,11 @@ contract RootDebot is Debot, Constants {
 
     uint64 g_duration;
     uint128 g_amount;
+    string g_descr;
 
     bool g_valid;
 
-    address[] g_service_list;
+    ServiceInfo[] g_service_list;
 
     function setIcon(bytes icon) public {
         require(msg.pubkey() == tvm.pubkey(), 100);
@@ -136,6 +137,7 @@ contract RootDebot is Debot, Constants {
         g_root_token = address(0);
         g_duration = 0;
         g_amount = 0;
+        g_descr = "";
         Terminal.print(0, format("Hello and welcome to the Service Manager ({}).",g_contract));
         Terminal.print(0, "You can here deploy new services.");
         Terminal.print(0, "1. Service payable with TON crystals");
@@ -151,7 +153,7 @@ contract RootDebot is Debot, Constants {
 
     function setUserMainAction(string value) public {
         if (value == "1"){
-            _selectDuration();
+            _selectDescription();
         } else if (value == "2") {
             _selectRootContract();
         } else if (value == "3") {
@@ -185,6 +187,23 @@ contract RootDebot is Debot, Constants {
         _selectDuration();
     }
 
+    function _selectDescription() public {
+        Terminal.input(
+            tvm.functionId(setDescription), 
+            "Tell your subscribers about your service",
+            false
+        );
+    }
+
+    function setDescription(string value) public {
+        if (value == "") {
+            _selectDescription();
+        } else {
+            g_descr = value;
+            _selectDuration();
+        }
+    }
+
     function _selectDuration() public {
         AmountInput.get(tvm.functionId(setDuration),
             "What is the subscription duration of your service?",
@@ -216,6 +235,7 @@ contract RootDebot is Debot, Constants {
     function _check() internal {
         if (g_root_token == address(0)) {
             Terminal.print(0, "You are about to deploy a new service with parameters:");
+            Terminal.print(0, g_descr);
             Terminal.print(0, format("Wallet: \"{}\"", g_wallet));
             Terminal.print(0, format("Duration of subscription: \"{}\"", g_duration));
             Terminal.print(0, format("Amount: \"{}\"", g_amount));
@@ -241,7 +261,8 @@ contract RootDebot is Debot, Constants {
                     g_amount,
                     g_duration,
                     g_root_token
-                )
+                ),
+                g_descr
             );
         IMultisig(g_wallet).sendTransaction {
             extMsg:true,
@@ -284,22 +305,22 @@ contract RootDebot is Debot, Constants {
         }();
     }
 
-    function saveServices(address[] services) public {
+    function saveServices(ServiceInfo[] services) public {
         g_service_list = services;
         printServices();
     }
 
     function printServices() public {
-        for(address service : g_service_list){
-            Terminal.print(0, format("Service: {}", service));            
+        for(ServiceInfo service : g_service_list){
+            Terminal.print(0, format("Service: {}", service.descr));            
         }
         mainMenu();
     }
 
     function printServicesSelection() public {
         uint32 i = 0;
-        for(address service : g_service_list){
-            Terminal.print(0, format("{}. {}", i, service));
+        for(ServiceInfo service : g_service_list){
+            Terminal.print(0, format("{}. {}", i, service.descr));
             ++i;          
         }
         AmountInput.get(tvm.functionId(selectService),
@@ -311,7 +332,7 @@ contract RootDebot is Debot, Constants {
 
     function selectService(uint value) public view {
         SubscriptionManagerDebot(g_subscription_manager_debot).onDebotStart(
-            g_service_list[value],
+            g_service_list[value].addr,
             g_wallet,
             g_wallet_pubkey
         );

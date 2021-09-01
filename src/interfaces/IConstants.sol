@@ -10,4 +10,9 @@ interface IConstants{
         address root_token; // Only for TIP3, =0 otherwise
     }
 
+    struct ServiceInfo {
+        address addr;
+        string descr;
+    }
+
 }

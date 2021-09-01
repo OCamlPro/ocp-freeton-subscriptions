@@ -20,6 +20,9 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
     address static s_wallet;
     // The wallet of the manager
 
+    string static s_description;
+    // The description of the service
+
     SubscriptionBuilder c_sub_builder;
     // Subscription builder
 
@@ -62,6 +65,10 @@ contract SubscriptionManager is ISubscriptionManager, Constants, Buildable {
     // in argument
     function getSubscription(address subscriber) override external view returns(address value){
         value = m_subscriptions[subscriber];
+    }
+
+    function getDescription() override external view returns(string description){
+        description = s_description;
     }
 
     // Entry points

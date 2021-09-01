@@ -21,7 +21,12 @@ contract SubManagerBuilder is Builder {
     }
 
     // Deploys a Subscription Manager contract
-    function deploy(address wallet, PaymentPlan pplan, address service_provider) external responsible returns(address, address, address) {
+    function deploy(
+        address wallet, 
+        PaymentPlan pplan, 
+        address service_provider, 
+        string description ) external responsible 
+        returns(address, address, address, string) {
         require (code.hasValue(), E_UNINITIALIZED);
 
         SubscriptionManager ctr = new SubscriptionManager {
@@ -30,10 +35,12 @@ contract SubManagerBuilder is Builder {
             varInit:{
                 s_id: now,
                 s_service_provider: service_provider,
-                s_wallet: wallet 
+                s_wallet: wallet,
+                s_description: description
             }
         }(c_sub_builder, c_wal_builder, pplan);
-        return {value:0,flag:128} (wallet, address(ctr), service_provider);
+        return {value:0,flag:128} 
+            (wallet, address(ctr), service_provider, description);
     }
 
 }
