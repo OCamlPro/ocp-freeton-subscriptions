@@ -1,7 +1,6 @@
 pragma ton-solidity >=0.44.0;
 pragma AbiHeader time;
 pragma AbiHeader expire;
-pragma AbiHeader pubkey;
 
 import "interfaces/IRecurringPaymentsRoot.sol";
 
@@ -56,7 +55,7 @@ contract RecurringPaymentsRoot is Constants, IRecurringPaymentsRoot {
 
     // Continuation of `deployService` : emits the deployed service and refunds the
     // wallet owner
-    function onDeployService(address wallet, address service, address provider) external view {
+    function onDeployService(address /* wallet */, address service, address provider) external view {
         require(msg.sender == address(c_sm_builder), E_UNAUTHORIZED);
         emit ServiceDeployed(service);
 

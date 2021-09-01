@@ -78,8 +78,9 @@ contract SubscriptionDebot is Debot {
   
     function onStart(address subs) public {
       g_contract = subs;
-    mainMenu();
-  }
+      mainMenu();
+    }
+    
     function mainMenu() public {
         Terminal.print(0, "Hello and welcome to your Subscription.");
         Terminal.print(0, "Please select an action.");

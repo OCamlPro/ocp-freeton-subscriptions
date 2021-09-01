@@ -109,7 +109,7 @@ abstract contract Utility {
         "Which service do you want to work with?");
     }
 
-    function onStart(address subman) public{
+    function onStart(address subman) public {
         g_contract = subman;
         mainMenu();
     } 

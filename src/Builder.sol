@@ -22,7 +22,7 @@ abstract contract Builder is Constants {
     // Entry points
 
     // Starts the initialization procedure by requesting the code of `ref`    
-    function init() external view{
+    function init() public virtual {
         require(!code.hasValue(), E_ALREADY_INITIALIZED);
         tvm.accept();
         ref.thisIsMyCode{value: 0, flag:64, callback:this.updateCode}();

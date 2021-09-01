@@ -1,15 +1,18 @@
 pragma ton-solidity >=0.44.0;
-pragma AbiHeader time;
 pragma AbiHeader expire;
+pragma AbiHeader pubkey;
+pragma AbiHeader time;
 
 import "Builder.sol";
 import "ServiceList.sol";
 import "interfaces/IRecurringPaymentsRoot.sol";
+import "interfaces/IServiceListBuilder.sol";
 
 // Service List Builder
-contract ServiceListBuilder is Builder {
+contract ServiceListBuilder is Builder, IServiceListBuilder {
 
     uint64 m_deploy_cpt;
+    address g_root; 
 
     constructor(address buildable) public {
         tvm.accept();
@@ -20,14 +23,14 @@ contract ServiceListBuilder is Builder {
     }
 
     struct DeploymentMessage{
-        address root;
         address provider;
         address service;
     }
 
 
-    mapping(uint64 => DeploymentMessage) m_deploy_msgs; // Deployed messages, used when bounce
-
+    mapping(uint64 => DeploymentMessage) m_deploy_msgs; 
+    // Deployed messages, used when bounce
+    // TODO: GC
 
     event Bounce();
     event OnBounce(uint32);
@@ -35,19 +38,23 @@ contract ServiceListBuilder is Builder {
     event Decode(uint64);
     event Error();
 
+    function init() override public {
+        super.init();
+        g_root = msg.sender;
+    }
 
     // Deploys a list of services (must be called by root)
     function deploy(address service_provider, address service) external {
         require (code.hasValue(), E_UNINITIALIZED);
         
-        m_deploy_msgs.add(now, DeploymentMessage(msg.sender, service_provider, service));
+        m_deploy_msgs.add(now, DeploymentMessage(service_provider, service));
 
         ServiceList list = new ServiceList {
             value:msg.value/3,
             code: code.get(),
             bounce:true,
             varInit:{
-                s_root: msg.sender,
+                s_root: g_root,
                 s_service_provider: service_provider,
                 s_deployer: address(this)
             }
@@ -59,6 +66,20 @@ contract ServiceListBuilder is Builder {
     
     }
 
+    function getServicesList(address provider) external view override returns(address list) {
+        TvmCell stateInit =
+            tvm.buildStateInit({
+                code:code.get(),
+                contr:ServiceList,
+                varInit:{
+                    s_root: g_root,
+                    s_service_provider: provider,
+                    s_deployer: address(this)
+                }    
+            });
+        list = address(tvm.hash(stateInit));
+        return list;
+    }
 
     onBounce(TvmSlice slice) external {
         tvm.accept();
@@ -78,7 +99,7 @@ contract ServiceListBuilder is Builder {
                     contr:ServiceList,
                     varInit:{
                         s_service_provider: m.provider,
-                        s_root: m.root,
+                        s_root: g_root,
                         s_deployer: address(this)
                     }    
                 });
