@@ -16,8 +16,9 @@ import "lib/Transferable.sol";
 
 import "../interfaces/ISubscription.sol";
 import "../interfaces/IMultisig.sol";
+import "../Constants.sol";
 
-contract SubscriptionDebot is Debot {
+contract SubscriptionDebot is Debot, Constants {
     
     string constant debot_name = "Subscription Debot" ;
     string constant debot_publisher = "OCamlPro" ;
@@ -34,6 +35,7 @@ contract SubscriptionDebot is Debot {
     address g_contract;
     address g_user;
     uint256 g_user_pubkey;
+    uint128 g_refill;
 
     function setIcon(bytes icon) public {
         require(msg.pubkey() == tvm.pubkey(), 100);
@@ -179,7 +181,7 @@ contract SubscriptionDebot is Debot {
             time:uint64(now),
             expire:0,
             sign:false,
-            callbackId:tvm.functionId(onSuccessSubscriptionEnd),
+            callbackId:tvm.functionId(onSuccessGetBalance),
             onErrorId:tvm.functionId(onErrorRestart),
             abiVer:2
         }();
@@ -209,8 +211,35 @@ contract SubscriptionDebot is Debot {
     }
 
     function _handleRefillAccount() internal {
-        Terminal.print(0, "Please enter the auction address. TODO");
-        //Terminal.input(tvm.functionId(setUserManage), "Action: ", false);
+        AmountInput.get(tvm.functionId(setRefill),
+            "How much funds (in nanotons) do you want to deposit on your account?",
+            0,
+            0.01 ton,
+            MAX_INT128
+        );
+    }
+
+    function setRefill(uint value) public {
+        TvmCell payload = 
+            tvm.encodeBody(
+                ISubscription.refillAccount,
+                0.01 ton
+            );
+        IMultisig(g_user).sendTransaction {
+            extMsg:true,
+            time:uint64(now),
+            expire:0,
+            sign:true,
+            pubkey:(g_user_pubkey),
+            callbackId:(tvm.functionId(onRefill)),
+            onErrorId:tvm.functionId(onErrorRestart),
+            abiVer:2
+        }(g_contract, uint128(value) + 0.01 ton, true, 0, payload);
+    }
+
+    function onRefill() public{
+        Terminal.print(0,"Refill complete!");
+        mainMenu();
     }
 
     function _handleCancel() internal view {

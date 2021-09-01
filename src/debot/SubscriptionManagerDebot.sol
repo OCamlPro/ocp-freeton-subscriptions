@@ -18,13 +18,7 @@ import "../interfaces/ISubscriptionManager.sol";
 import "../interfaces/ISubscription.sol";
 import "../interfaces/IMultisig.sol";
 import "SubscriptionDebot.sol";
-
-// Interface of the contract with which to interact
-
-interface IContract {
-    function setter ( uint256 x ) external ;
-    function getter () external returns ( uint256 y ) ;
-}
+import "../Constants.sol";
 
 abstract contract Utility {
 
@@ -43,9 +37,9 @@ abstract contract Utility {
             uint64 float = uint64(nanotokens - (decimal * 1e9));
             return (decimal, float);
         }
-    }
+}
 
-    contract SubscriptionManagerDebot is Debot, Upgradable, Transferable, Utility {
+contract SubscriptionManagerDebot is Debot, Constants {
 
     string constant debot_name = "Subscription Manager Debot" ;
     string constant debot_publisher = "OCamlPro" ;
@@ -85,8 +79,6 @@ abstract contract Utility {
         tvm.accept();
         g_subscription_debot = debot;
     }
-
-    function onCodeUpgrade() internal override{}
 
     /// @notice Returns Metadata about DeBot.
     function getDebotInfo() public functionID(0xDEB) override view returns(
@@ -204,9 +196,7 @@ abstract contract Utility {
         }(g_contract, 1 ton, true, 0, payload);
     }
 
-
-    function onSubscription() public {
-        Terminal.print(0, "You have successfully been subscribed!");
+    function _getSubscription() internal {
         ISubscriptionManager(g_contract).getSubscription{
             extMsg:true,
             time:uint64(now),
@@ -216,6 +206,11 @@ abstract contract Utility {
             onErrorId:0,
             abiVer:2
         }(g_user);
+    }
+
+    function onSubscription() public {
+        Terminal.print(0, "You have successfully been subscribed!");
+        _getSubscription();
     }
 
     function onSubscriptionSuccess(address value) public {
@@ -251,8 +246,13 @@ abstract contract Utility {
     }
 
     function onErrorRestart(uint32 sdkError, uint32 exitCode) public {
-        Terminal.print(0, format("Error: sdkError:{} exitCode:{}", sdkError, exitCode));
-        mainMenu();
+        if (exitCode == E_ALREADY_SUBSCRIBED) {
+            Terminal.print(0, "You already have a subscription!");
+            _getSubscription();
+        } else {
+            Terminal.print(0, format("Error: sdkError:{} exitCode:{}", sdkError, exitCode));
+            mainMenu();
+        }
     }
 
 }
