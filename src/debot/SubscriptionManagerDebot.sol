@@ -60,6 +60,8 @@ contract SubscriptionManagerDebot is Debot, Constants {
     address g_root_debot;
     string g_descr;
 
+    address g_has_subscribed; // If not,  = 0
+
     function getRequiredInterfaces() public view override
         returns (uint256[] interfaces) {
         return [
@@ -155,14 +157,14 @@ contract SubscriptionManagerDebot is Debot, Constants {
             expire:0,
             sign:false,
             callbackId:tvm.functionId(onGetDescription),
-            onErrorId:0,
+            onErrorId:tvm.functionId(onErrorRestart),
             abiVer:2
         }();
     }
 
     function onGetDescription(string description) public {
         g_descr = description;
-        mainMenu();
+        _checkUserSubscribed();
     }
 
     function onDebotStart(address submanager, address user, uint256 pubkey, string descr) public {
@@ -170,6 +172,23 @@ contract SubscriptionManagerDebot is Debot, Constants {
         g_user = user;
         g_user_pubkey = pubkey;
         g_descr = descr;
+        _checkUserSubscribed();
+    }
+
+    function _checkUserSubscribed() internal {
+        ISubscriptionManager(g_contract).getSubscription{
+            extMsg:true,
+            time:uint64(now),
+            expire:0,
+            sign:false,
+            callbackId:tvm.functionId(setSubscription),
+            onErrorId:tvm.functionId(onErrorRestart),
+            abiVer:2
+        }(g_user);
+    }
+
+    function setSubscription(address value) public {
+        g_has_subscribed = value;
         mainMenu();
     }
 
@@ -177,7 +196,13 @@ contract SubscriptionManagerDebot is Debot, Constants {
     function mainMenu () public {
         Terminal.print(0, format("Hello and welcome to the \"{}\" Service!", g_descr));
         Terminal.print(0, "Please select an action.");
-        Terminal.print(0, "1. Subscribe/Manage my subscription");
+        
+        if (g_has_subscribed == address(0)) {
+            Terminal.print(0, "1. Subscribe");
+        } else {
+            Terminal.print(0, "1. Manage my subscription");
+        }        
+        
         Terminal.print(0, "2. Claim the subscription fees (owner only)");
         Terminal.print(0, "9. Change Service Manager");
         Terminal.print(0, "0. Back");
@@ -186,7 +211,11 @@ contract SubscriptionManagerDebot is Debot, Constants {
 
     function setUserMainAction(string value) public {
         if (value == "1"){
-            _handleSubscription();
+            if (g_has_subscribed == address(0)) {
+                _handleSubscription();
+            } else {
+                _goToSubscription();
+            }        
         } else if (value == "2") {
             _handleClaim();
         } else if (value == "9") {
@@ -197,6 +226,14 @@ contract SubscriptionManagerDebot is Debot, Constants {
             Terminal.print(0, format("You have entered \"{}\", which is an invalid action.", value));
             mainMenu();
         }
+    }
+
+    function _goToSubscription() internal view {
+        SubscriptionDebot(g_subscription_debot).onDebotStart(
+            g_has_subscribed, 
+            g_user, 
+            g_user_pubkey
+        );
     }
 
     function _handleSubscription() internal view {
@@ -237,6 +274,7 @@ contract SubscriptionManagerDebot is Debot, Constants {
 
     function onSubscriptionSuccess(address value) public {
         Terminal.print(0, format("Subscription address: {}", value));
+        g_has_subscribed = value;
         SubscriptionDebot(g_subscription_debot).onDebotStart(
             value, 
             g_user, 
