@@ -312,7 +312,7 @@ contract RootDebot is Debot, Constants {
 
     function printServices() public {
         for(ServiceInfo service : g_service_list){
-            Terminal.print(0, format("Service: {}", service.descr));            
+            Terminal.print(0, format("Service: {} ({})", service.descr, service.addr));            
         }
         mainMenu();
     }
@@ -320,7 +320,7 @@ contract RootDebot is Debot, Constants {
     function printServicesSelection() public {
         uint32 i = 0;
         for(ServiceInfo service : g_service_list){
-            Terminal.print(0, format("{}. {}", i, service.descr));
+            Terminal.print(0, format("{}. {} ({})", i, service.descr, service.addr));
             ++i;          
         }
         AmountInput.get(tvm.functionId(selectService),

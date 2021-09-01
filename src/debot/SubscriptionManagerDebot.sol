@@ -194,7 +194,7 @@ contract SubscriptionManagerDebot is Debot, Constants {
 
 
     function mainMenu () public {
-        Terminal.print(0, format("Hello and welcome to the \"{}\" Service!", g_descr));
+        Terminal.print(0, format("Hello and welcome to the \"{}\" Service! ({})", g_descr, g_contract));
         Terminal.print(0, "Please select an action.");
         
         if (g_has_subscribed == address(0)) {
